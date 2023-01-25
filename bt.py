@@ -79,16 +79,38 @@ class MyStrategy(Strategy):
     def next(self):
         print("Reached next(self)")
 
-        #defining time of last candle
-        last_candle_time = datetime.datetime.strptime(self.data.Time[-1], "%H:%M").time()
 
-        # Your strategy logic here
-        #Checking if current time is in between defining hour
-        if last_candle_time >= self.rdr_session_vars['defining_hour_start'] and last_candle_time < self.rdr_session_vars['defining_hour_end'] :
+        for sessions in [self.rdr_session_vars, self.odr_session_vars, self.adr_session_vars]:
 
-            print("session's defining hour is ongoing")
-        else:
-            print("Sessions hour has passen")
+            #defining time of last candle
+            last_candle_time = datetime.datetime.strptime(self.data.Time[-1], "%H:%M").time()
+
+            # Your strategy logic here
+            #Checking if current time is in between defining hour
+            if last_candle_time >= sessions['defining_hour_start'] and last_candle_time < sessions['defining_hour_end']:
+                print("session's defining hour is ongoing")
+                #Update levels
+                sessions['dr_high'] = max(self.data.close[-1], sessions['dr_high'])
+                sessions['dr_low'] = min(self.data.close[-1], sessions['dr_low'])
+                sessions['idr_high'] = max(self.data.high[-1], sessions['idr_high'])
+                sessions['idr_low'] = min(self.data.low[-1], sessions['idr_low'])
+
+            else:
+                print("Sessions hour has passed")
+                #Check if session is still valid
+                if last_candle_time > sessions['defining_hour_end'] and last_candle_time <= sessions['session_validity']:
+                    print("session is still valid")
+                    #loop through the levels that have to be checked for a break
+                    def breaklevel(open_price, close_price, level):
+                        if open_price <= level <= close_price:
+                            return 1
+                        elif open_price >= level >= close_price:
+                            return 2
+                        levels = [sessions['dr_low'], sessions['idr_low'], sessions['dr_high'], sessions['idr_high']]
+                        open_price, close_price = self.data.open[-1], self.data.close[-1]
+                        for level in levels:
+                            result = breaklevel(open_price, close_price, level)
+                            sessions['levelbreaks'].append(sessions['session_name'], last_candle_time, level, result, open_price, close_price, levels)
         
 # Create a Backtest object using the data and the strategy
 bt = Backtest(data, MyStrategy, cash=100000, commission=.002)
