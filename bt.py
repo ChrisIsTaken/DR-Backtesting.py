@@ -127,13 +127,15 @@ class MyStrategy(Strategy):
                     open_price, close_price = self.data.Open[-1], self.data.Close[-1]
                     print("entering level loop")
                     for level in levels:
+                        print("Current level: ", level)
                         result = breaklevel(open_price, close_price, level)
                         print("current result is:", result)
                         if result == 1 or result == 2:
-                            print("adding the following to levelbreaks: ", sessions['session_name'], last_candle_time, level, result, open_price, close_price)
-                            sessions['levelbreaks'].append([sessions['session_name'], last_candle_time, level, result, open_price, close_price])
+                            print("adding the following to levelbreaks: ", last_candle_time, level, result, open_price, close_price)
+                            sessions['levelbreaks'].append([last_candle_time, level, result, open_price, close_price])
                 else:
                     #session is not valid anymore, append values to csv
+                    print("Session is not valid anymore, appending following values to csv: ", sessions['session_name'], sessions['dr_high'], sessions['dr_high_timestamp'], sessions['dr_low'], sessions['dr_low_timestamp'], sessions['idr_high'], sessions['idr_high_timestamp'], sessions['idr_low'], sessions['idr_low_timestamp'], sessions['levelbreaks'])
                     self.csvwriter.writerow([sessions['session_name'], sessions['dr_high'], sessions['dr_high_timestamp'], sessions['dr_low'], sessions['dr_low_timestamp'], sessions['idr_high'], sessions['idr_high_timestamp'], sessions['idr_low'], sessions['idr_low_timestamp'], sessions['levelbreaks']])
                     self.csvfile.flush()
         
