@@ -3,7 +3,7 @@ import datetime
 import pandas as pd
 from backtesting import Strategy
 from backtesting import Backtest
-#from csv import csv
+import csv
 
 # Load data from CSV file into a DataFrame
 #data = pd.read_csv("data.csv", parse_dates={'timestamp': ['Date', 'Time']}, names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
@@ -70,11 +70,11 @@ class MyStrategy(Strategy):
 
         # open a csv file to store the results
         print("opening csv file")
-        #self.csvfile = open('session_results.csv', 'a', newline='') 
+        self.csvfile = open('session_results.csv', 'a', newline='') 
         print("creating instance of csvwriter")
-        #self.csvwriter = csv.writer(self.csvfile)
+        self.csvwriter = csv.writer(self.csvfile)
         print("writing header of scvfile")
-        #self.csvwriter.writerow(['session_name', 'dr_high', 'dr_high_timestamp', 'dr_low', 'dr_low_timestamp', 'idr_high', 'idr_high_timestamp', 'idr_low', 'idr_low_timestamp', 'levelbreaks'])
+        self.csvwriter.writerow(['session_name', 'dr_high', 'dr_high_timestamp', 'dr_low', 'dr_low_timestamp', 'idr_high', 'idr_high_timestamp', 'idr_low', 'idr_low_timestamp', 'levelbreaks'])
 
     def next(self):
         print("Reached next(self)")
@@ -87,33 +87,58 @@ class MyStrategy(Strategy):
 
             # Your strategy logic here
             #Checking if current time is in between defining hour
+            print(sessions['session_name'])
+            print(last_candle_time)
+            print(sessions['defining_hour_start'])
+            print(sessions['defining_hour_end'])
             if last_candle_time >= sessions['defining_hour_start'] and last_candle_time < sessions['defining_hour_end']:
                 print("session's defining hour is ongoing")
                 #Update levels
-                sessions['dr_high'] = max(self.data.close[-1], sessions['dr_high'])
-                sessions['dr_low'] = min(self.data.close[-1], sessions['dr_low'])
-                sessions['idr_high'] = max(self.data.high[-1], sessions['idr_high'])
-                sessions['idr_low'] = min(self.data.low[-1], sessions['idr_low'])
+                print("updating levels:")
+                if (sessions['dr_high'] == None) or (self.data.Close[-1] > sessions['dr_high']):
+                    sessions['dr_high'] = self.data.Close[-1]
+
+                if (sessions['dr_low'] == None) or (self.data.Close[-1] < sessions['dr_low']):
+                    sessions['dr_low'] = self.data.Close[-1]
+
+                if (sessions['idr_high'] == None) or (self.data.High[-1] > sessions['idr_high']):
+                    sessions['idr_high'] = self.data.High[-1]
+
+                if (sessions['idr_low'] == None) or (self.data.Low[-1] < sessions['idr_low']):
+                    sessions['idr_low'] = self.data.Low[-1]
+
+
+                print("Updated values: drhigh:", sessions['dr_high'], "drlow: ", sessions['dr_low'], "idrhigh: ", sessions['idr_high'], "idrlow: ", sessions['idr_low'])
+
 
             else:
                 print("Sessions hour has passed")
                 #Check if session is still valid
                 if last_candle_time > sessions['defining_hour_end'] and last_candle_time <= sessions['session_validity']:
                     print("session is still valid")
-                    #loop through the levels that have to be checked for a break
+                    
                     def breaklevel(open_price, close_price, level):
-                        if open_price <= level <= close_price:
+                        if (open_price < level) and  (level > close_price):
                             return 1
-                        elif open_price >= level >= close_price:
+                        elif (open_price > level) and (level < close_price):
                             return 2
-                        levels = [sessions['dr_low'], sessions['idr_low'], sessions['dr_high'], sessions['idr_high']]
-                        open_price, close_price = self.data.open[-1], self.data.close[-1]
-                        for level in levels:
-                            result = breaklevel(open_price, close_price, level)
-                            sessions['levelbreaks'].append(sessions['session_name'], last_candle_time, level, result, open_price, close_price, levels)
+
+                    levels = [sessions['dr_low'], sessions['idr_low'], sessions['dr_high'], sessions['idr_high']]
+                    open_price, close_price = self.data.Open[-1], self.data.Close[-1]
+                    print("entering level loop")
+                    for level in levels:
+                        result = breaklevel(open_price, close_price, level)
+                        print("current result is:", result)
+                        if result == 1 or result == 2:
+                            print("adding the following to levelbreaks: ", sessions['session_name'], last_candle_time, level, result, open_price, close_price)
+                            sessions['levelbreaks'].append([sessions['session_name'], last_candle_time, level, result, open_price, close_price])
+                else:
+                    #session is not valid anymore, append values to csv
+                    self.csvwriter.writerow([sessions['session_name'], sessions['dr_high'], sessions['dr_high_timestamp'], sessions['dr_low'], sessions['dr_low_timestamp'], sessions['idr_high'], sessions['idr_high_timestamp'], sessions['idr_low'], sessions['idr_low_timestamp'], sessions['levelbreaks']])
+                    self.csvfile.flush()
         
 # Create a Backtest object using the data and the strategy
 bt = Backtest(data, MyStrategy, cash=100000, commission=.002)
 stats = bt.run()
 print(stats)
-bt.plot()
+#bt.plot()
