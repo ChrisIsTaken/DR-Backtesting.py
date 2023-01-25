@@ -13,6 +13,13 @@ data['timestamp'] = pd.to_datetime(data['Date'] + ' ' + data['Time'], format='%Y
 data['hour'] = data['timestamp'].dt.hour
 data['minute'] = data['timestamp'].dt.minute
 
+#define breaklevel function
+def breaklevel(open_price, close_price, level):
+    if (open_price < level) and  (level > close_price):
+        return 1
+    elif (open_price > level) and (level < close_price):
+        return 2
+
 # Define your strategy
 class MyStrategy(Strategy):
     def init(self):
@@ -76,13 +83,6 @@ class MyStrategy(Strategy):
         print("writing header of scvfile")
         self.csvwriter.writerow(['session_name', 'dr_high', 'dr_high_timestamp', 'dr_low', 'dr_low_timestamp', 'idr_high', 'idr_high_timestamp', 'idr_low', 'idr_low_timestamp', 'levelbreaks'])
 
-    #define breaklevel function
-    def breaklevel(open_price, close_price, level):
-        if (open_price < level) and  (level > close_price):
-            return 1
-        elif (open_price > level) and (level < close_price):
-            return 2
-
     def next(self):
         print("Reached next(self)")
 
@@ -129,7 +129,7 @@ class MyStrategy(Strategy):
                     print("entering level loop")
                     for level in levels:
                         print("Current level: ", level)
-                        result = self.breaklevel(open_price, close_price, level)
+                        result = breaklevel(open_price, close_price, level)
                         print("current result is:", result)
                         if result == 1 or result == 2:
                             print("adding the following to levelbreaks: ", last_candle_time, level, result, open_price, close_price)
