@@ -7,7 +7,7 @@ import csv
 
 # Load data from CSV file into a DataFrame
 #data = pd.read_csv("data.csv", parse_dates={'timestamp': ['Date', 'Time']}, names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
-data = pd.read_csv("data.csv", names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
+data = pd.read_csv("data\DAT_MT_NSXUSD_M1_2022.csv", names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
 
 data['timestamp'] = pd.to_datetime(data['Date'] + ' ' + data['Time'], format='%Y.%m.%d %H:%M')
 data['hour'] = data['timestamp'].dt.hour
@@ -15,13 +15,17 @@ data['minute'] = data['timestamp'].dt.minute
 
 #define breaklevel function
 def breaklevel(open_price, close_price, level):
-    if (open_price < level) and  (level > close_price):
+    print("breaklevel function has been initiated")
+    if (open_price > level) and (close_price < level):
+        print("broken below")
         return 1
-    elif (open_price > level) and (level < close_price):
+    elif (open_price < level) and (close_price > level):
+        print("broken above")
         return 2
 
 # Define your strategy
 class MyStrategy(Strategy):
+
     def init(self):
         print("Reached init(self)")
         #RDR Vars
@@ -75,14 +79,6 @@ class MyStrategy(Strategy):
             'levelbreaks': [],
         }
 
-        # open a csv file to store the results
-        print("opening csv file")
-        self.csvfile = open('session_results.csv', 'a', newline='') 
-        print("creating instance of csvwriter")
-        self.csvwriter = csv.writer(self.csvfile)
-        print("writing header of scvfile")
-        self.csvwriter.writerow(['session_name', 'dr_high', 'dr_high_timestamp', 'dr_low', 'dr_low_timestamp', 'idr_high', 'idr_high_timestamp', 'idr_low', 'idr_low_timestamp', 'levelbreaks'])
-
     def next(self):
         print("Reached next(self)")
 
@@ -129,16 +125,21 @@ class MyStrategy(Strategy):
                     print("entering level loop")
                     for level in levels:
                         print("Current level: ", level)
+                        print("Current open: ", open_price)
+                        print("Current close: ", close_price)
                         result = breaklevel(open_price, close_price, level)
                         print("current result is:", result)
                         if result == 1 or result == 2:
                             print("adding the following to levelbreaks: ", last_candle_time, level, result, open_price, close_price)
-                            sessions['levelbreaks'].append([last_candle_time, level, result, open_price, close_price])
+                            for item in [last_candle_time, level, result, open_price, close_price]:
+                                sessions['levelbreaks'].append(item)
                 else:
                     #session is not valid anymore, append values to csv
-                    print("Session is not valid anymore, appending following values to csv: ", sessions['session_name'], sessions['dr_high'], sessions['dr_high_timestamp'], sessions['dr_low'], sessions['dr_low_timestamp'], sessions['idr_high'], sessions['idr_high_timestamp'], sessions['idr_low'], sessions['idr_low_timestamp'], sessions['levelbreaks'])
-                    self.csvwriter.writerow([sessions['session_name'], sessions['dr_high'], sessions['dr_high_timestamp'], sessions['dr_low'], sessions['dr_low_timestamp'], sessions['idr_high'], sessions['idr_high_timestamp'], sessions['idr_low'], sessions['idr_low_timestamp'], sessions['levelbreaks']])
-                    self.csvfile.flush()
+                    with open('session_results.csv', 'w', newline='') as csvfile:
+                        writer = csv.writer(csvfile, escapechar='\\', quoting=csv.QUOTE_NONE)
+                        print("Session is not valid anymore, appending following values to csv: ", sessions['session_name'], sessions['dr_high'], sessions['dr_high_timestamp'], sessions['dr_low'], sessions['dr_low_timestamp'], sessions['idr_high'], sessions['idr_high_timestamp'], sessions['idr_low'], sessions['idr_low_timestamp'], sessions['levelbreaks'])
+                        writer.writerow([sessions['session_name'], sessions['dr_high'], sessions['dr_high_timestamp'], sessions['dr_low'], sessions['dr_low_timestamp'], sessions['idr_high'], sessions['idr_high_timestamp'], sessions['idr_low'], sessions['idr_low_timestamp'], sessions['levelbreaks']])
+                        #self.csvfile.flush()
         
 # Create a Backtest object using the data and the strategy
 bt = Backtest(data, MyStrategy, cash=100000, commission=.002)
