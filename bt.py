@@ -31,9 +31,9 @@ class MyStrategy(Strategy):
         #RDR Vars
         self.rdr_session_vars = {
             'session_name': 'RDR',                          #Var to store the sessions name
-            'defining_hour_start': datetime.datetime.strptime("09:30", "%H:%M").time(),    #Var to store time when session's defining hour starts
-            'defining_hour_end': datetime.datetime.strptime("10:30", "%H:%M").time(),   #Var to store time when session's defining hour ends
-            'session_validity': datetime.datetime.strptime("13:00", "%H:%M").time(),      #Var to store time when session is invalid
+            'defining_hour_start': "09:30:00",    #Var to store time when session's defining hour starts
+            'defining_hour_end': "10:30:00",   #Var to store time when session's defining hour ends
+            'session_validity': "13:00:00",      #Var to store time when session is invalid
             'dr_high': None,                                #Var to store dr high
             'dr_high_timestamp': None,                      #dr high timestamp
             'dr_low': None,                                 #Var to store dr low
@@ -48,9 +48,9 @@ class MyStrategy(Strategy):
         #ODR Vars
         self.odr_session_vars = {
             'session_name': 'ODR',
-            'defining_hour_start': datetime.datetime.strptime("03:00", "%H:%M").time(),
-            'defining_hour_end': datetime.datetime.strptime("04:30", "%H:%M").time(),
-            'session_validity': datetime.datetime.strptime("02:00", "%H:%M").time(),
+            'defining_hour_start': "03:00:00",
+            'defining_hour_end': "04:30:00",
+            'session_validity': "02:00:00",
             'dr_high': None,
             'dr_high_timestamp': None,
             'dr_low': None,
@@ -65,9 +65,9 @@ class MyStrategy(Strategy):
         #ADR Vars
         self.adr_session_vars = {
             'session_name': 'ADR',
-            'defining_hour_start': datetime.datetime.strptime("19:30", "%H:%M").time(),
-            'defining_hour_end': datetime.datetime.strptime("20:30", "%H:%M").time(),
-            'session_validity': datetime.datetime.strptime("08:00", "%H:%M").time(),
+            'defining_hour_start': "19:30:00",
+            'defining_hour_end': "20:30:00",
+            'session_validity': "08:00:00",
             'dr_high': None,
             'dr_high_timestamp': None,
             'dr_low': None,
@@ -85,16 +85,12 @@ class MyStrategy(Strategy):
 
         for sessions in [self.rdr_session_vars, self.odr_session_vars, self.adr_session_vars]:
 
-            #defining time of last candle
-            last_candle_time = datetime.datetime.strptime(self.data.Time[-1], "%H:%M").time()
-
             # Your strategy logic here
             #Checking if current time is in between defining hour
             print(sessions['session_name'])
-            print(last_candle_time)
             print(sessions['defining_hour_start'])
             print(sessions['defining_hour_end'])
-            if last_candle_time >= sessions['defining_hour_start'] and last_candle_time < sessions['defining_hour_end']:
+            if self.data.Time[-1] >= sessions['defining_hour_start'] and self.data.Time[-1] < sessions['defining_hour_end']:
                 print("session's defining hour is ongoing")
                 #Update levels
                 print("updating levels:")
@@ -117,7 +113,7 @@ class MyStrategy(Strategy):
             else:
                 print("Sessions hour has passed")
                 #Check if session is still valid
-                if last_candle_time > sessions['defining_hour_end'] and last_candle_time <= sessions['session_validity']:
+                if self.data.Time[-1] > sessions['defining_hour_end'] and self.data.Time[-1] <= sessions['session_validity']:
                     print("session is still valid")
                     
                     levels = [sessions['dr_low'], sessions['idr_low'], sessions['dr_high'], sessions['idr_high']]
@@ -130,9 +126,10 @@ class MyStrategy(Strategy):
                         result = breaklevel(open_price, close_price, level)
                         print("current result is:", result)
                         if result == 1 or result == 2:
-                            print("adding the following to levelbreaks: ", last_candle_time, level, result, open_price, close_price)
-                            for item in [last_candle_time, level, result, open_price, close_price]:
+                            print("adding the following to levelbreaks: ", self.data.Time[-1], level, result, open_price, close_price)
+                            for item in [self.data.Time[-1], level, result, open_price, close_price]:
                                 sessions['levelbreaks'].append(item)
+                                print("levelbreaks current state: ", sessions['levelbreaks'])
                 else:
                     #session is not valid anymore, append values to csv
                     with open('session_results.csv', 'w', newline='') as csvfile:
