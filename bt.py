@@ -108,38 +108,39 @@ class MyStrategy(Strategy):
             else:
                 #Check if session is still valid
                 print("Defining hour passed, checking if ", sessions['session_name'], "-session is still valid")
-                if self.data.Time[-1] > sessions['defining_hour_end'] and self.data.Time[-1] <= sessions['session_validity']:
+                if sessions['dr_high'] != None and self.data.Time[-1] > sessions['defining_hour_end'] and self.data.Time[-1] <= sessions['session_validity']:
                     print("session is valid")
                     levels = [sessions['dr_low'], sessions['idr_low'], sessions['dr_high'], sessions['idr_high']]
                     #Check if any of the sessions is none
-                    #If levels are none, theres no point in running following code
-                    if sessions['dr_high'] != None:
-                        open_price, close_price = self.data.Open[-1], self.data.Close[-1]
-
-                        print("entering level loop")
-                        print("dr_low", sessions['dr_low'])
-                        print("idr_low", sessions['idr_low'])
-                        print("dr_high", sessions['dr_high'])
-                        print("idr_high", sessions['idr_high'])
-                        for level in levels:
-                            levelname = None
-                            if level == sessions['dr_low']: levelname = 'dr_low'
-                            if level == sessions['dr_high']: levelname = 'dr_high'
-                            if level == sessions['idr_low']: levelname = 'idr_low'
-                            if level == sessions['idr_high']: levelname = 'idr_high'
-                            result = breaklevel(open_price, close_price, level)
-                            if result == 1 or result == 2:
-                                print("adding the following to levelbreaks: ", self.data.Date[-1], self.data.Time[-1], levelname, level, result, open_price, close_price)
-                                
-                                #for item in [self.data.Date[-1], self.data.Time[-1], levelname, level, result, open_price, close_price]:
-                                sessions['levelbreaks'].append([self.data.Date[-1], self.data.Time[-1], levelname, level, result, open_price, close_price])
+                    
+                    open_price, close_price = self.data.Open[-1], self.data.Close[-1]
+                    print("verifying open and close: ", open_price, close_price)
+                    print("entering level loop")
+                    print("dr_low", sessions['dr_low'])
+                    print("idr_low", sessions['idr_low'])
+                    print("dr_high", sessions['dr_high'])
+                    print("idr_high", sessions['idr_high'])
+                    for level in levels:
+                        levelname = None
+                        if level == sessions['dr_low']: levelname = 'dr_low'
+                        if level == sessions['dr_high']: levelname = 'dr_high'
+                        if level == sessions['idr_low']: levelname = 'idr_low'
+                        if level == sessions['idr_high']: levelname = 'idr_high'
+                        result = breaklevel(open_price, close_price, level)
+                        if result == 1 or result == 2:
+                            print("adding the following to levelbreaks: ", self.data.Date[-1], self.data.Time[-1], levelname, level, result, open_price, close_price)
+                            
+                            #for item in [self.data.Date[-1], self.data.Time[-1], levelname, level, result, open_price, close_price]:
+                            sessions['levelbreaks'].append([self.data.Date[-1], self.data.Time[-1], levelname, level, result, open_price, close_price])
                                     
                     if self.data.Time[-1] == sessions['session_validity']:
-                        print("add to csv")
+                        print(self.data.Time[-1], " add to csv: ", sessions)
                         df = pd.DataFrame(sessions)
-                        df.to_csv('session_results.csv',sep=str(','))
+                        df.to_csv('session_results.csv',sep=str(','), mode='a', header=None)
                         print("clearing levelbreaks")
                         sessions['levelbreaks'].clear
+                else:
+                    print("session is not valid")
                             
 # Create a Backtest object using the data and the strategy
 bt = Backtest(data, MyStrategy, cash=100000, commission=.002)
