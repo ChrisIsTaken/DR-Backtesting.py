@@ -5,13 +5,13 @@ from datetime import datetime
 from backtesting import Strategy, Backtest
 
 class Session:
-    def __init__(self, session_id, session_name, defining_hour_start, defining_hour_end, session_validity, date, dr_high, dr_high_timestamp, dr_low, dr_low_timestamp, idr_high, idr_high_timestamp, idr_low, idr_low_timestamp, ec, rule):
-        self.session_id = session_id
+    def __init__(self, session_name, date, defining_hour_start, defining_hour_end, session_validity, dr_high, dr_high_timestamp, dr_low, dr_low_timestamp, idr_high, idr_high_timestamp, idr_low, idr_low_timestamp, ec, rule):
+        #self.session_id = session_id
         self.session_name = session_name
+        self.date = date
         self.defining_hour_start = defining_hour_start
         self.defining_hour_end = defining_hour_end
         session_validity = session_validity
-        self.date = date
         self.dr_high = dr_high
         self.dr_high_timestamp = dr_high_timestamp
         self.dr_low = dr_low
@@ -58,7 +58,7 @@ def is_time_between(time, start, end):
 
 #function to detect breaks in relevant levels
 def breaklevel(open_price, close_price, level):
-    print("open",open_price, "close",close_price, "level",level)
+    #print("open",open_price, "close",close_price, "level",level)
     if (open_price > level) and (close_price < level):
         return 1
     if (open_price < level) and (close_price > level):
@@ -103,15 +103,15 @@ class DR_Backtesting(Strategy):
     
 
     def next(self):
-        print("next has been reached")
+        #print("next has been reached")
 
         for sessions in [self.rdr_session, self.adr_session, self.odr_session]:
-            print(sessions['session_name'])
+            #print(sessions['session_name'])
 
 
             #check if session has yet to be identified
             if is_time_between(self.data.Time[-1], sessions['defining_hour_start'], sessions['defining_hour_end']):
-                print("Hour has to be identified")
+                #print("Hour has to be identified")
                 
                 if 'openlist' in locals():
                     openlist.append((self.data.Open[-1], self.data.Time[-1]))
@@ -127,25 +127,25 @@ class DR_Backtesting(Strategy):
                 else: lowlist = [(self.data.Low[-1], self.data.Time[-1])]
 
                 #Update levels and timestamps
-                print("updating levels:")
+                #print("updating levels:")
                 self.drhigh, self.drhightimestamp = max(openlist + closelist, key=lambda x: x[0])
                 self.drlow, self.drlowtimestamp = min(openlist + closelist, key=lambda x: x[0])
                 self.idrlow, self.idrlowtimestamp = min(lowlist + closelist + openlist, key=lambda x: x[0])
                 self.idrhigh, self.idrhightimestamp = max(openlist + closelist + highlist, key=lambda x: x[0])
 
-                print("Updated values: drhigh:", self.drhigh, "drlow: ", self.drlow, "idrhigh: ", self.idrhigh, "idrlow: ", self.idrlow)
+                #print("Updated values: drhigh:", self.drhigh, "drlow: ", self.drlow, "idrhigh: ", self.idrhigh, "idrlow: ", self.idrlow)
             
             else:
-                print("hour has been identified")
+                #print("hour has been identified")
 
                 #Session's DR has been indetified, check if it's still valid
-                print(self.data.Time[-1], "|", sessions['defining_hour_end'], "|", sessions['session_validity'])
-                print("drhigh: ", self.drhigh)
+                #print(self.data.Time[-1], "|", sessions['defining_hour_end'], "|", sessions['session_validity'])
+                #print("drhigh: ", self.drhigh)
                 if (self.drhigh != '') and (is_time_between(self.data.Time[-1], sessions['defining_hour_end'], sessions['session_validity']) == True):
-                    print("session is still valid and levels have been defined")
-                    print("hourflag=true")
+                    #print("session is still valid and levels have been defined")
+                    #print("hourflag=true")
                     levels = [self.drlow, self.drhigh, self.idrlow, self.idrhigh]
-                    print("levels: ", levels)
+                    #print("levels: ", levels)
                     #Check if any of the sessions is none
                     open_price, close_price = self.data.Open[-1], self.data.Close[-1]
                     for num, level in enumerate(levels):
@@ -156,17 +156,17 @@ class DR_Backtesting(Strategy):
                         if num == 2: levelname = 'idr_low'
                         if num == 3: levelname = 'idr_high'
 
-                        print("vars for breaklevels", open_price, close_price, level)
+                        #print("vars for breaklevels", open_price, close_price, level)
                         result = breaklevel(open_price, close_price, level)
 
-                        print("Result: ", result)
+                        #print("Result: ", result)
                         if result == 1 or result == 2:
-                            print("add to levelbreak")
+                            #print("add to levelbreak")
                             breakinstances.append(Levelbreak(self.data.Date[-1], self.data.Time[-1], levelname, level, result, open_price, close_price))
                             self.breaklist.append([self.data.Date[-1], self.data.Time[-1], levelname, level, result, open_price, close_price])
-                            print("levelbreaklist: ", self.breaklist)
+                            #print("levelbreaklist: ", self.breaklist)
                             for x in self.breaklist:
-                                print("levelname,result", x[2], levelname, result)
+                                #print("levelname,result", x[2], levelname, result)
                                 if (x[2] == 'dr_high') and (levelname == 'idr_low') and (result == 1):
                                     self.ec = False
                                 if (x[2] == 'dr_low') and (levelname == 'idr_high') and (result == 2):
@@ -175,14 +175,14 @@ class DR_Backtesting(Strategy):
                                     self.rule = False
                                 if (x[2] == 'idr_low') and (level == 'idr_high') and (result == 2):
                                     self.rule = False
-                                print("ec + rule = ", self.ec, self.rule)
+                                #print("ec + rule = ", self.ec, self.rule)
                     if (self.data.Time[-1] == sessions['session_validity']):
-                        print("create new session object with all the designated values and append it to the dataframe")
+                        #print("create new session object with all the designated values and append it to the dataframe")
                         #if 'sessionid' in locals(): sessionid = sessionid+1
                         #else: sessionid=1
-                        #print("SessionID is: ", sessionid)
-                        sessioninstances.append(Session(sessions['session_name'], self.data.Date[-1], sessions['defining_hour_start'], sessions['defining_hour_end'], sessions['session_validity'], self.data.Date[-1], self.drhigh, self.drhightimestamp, self.drlow, self.drlowtimestamp, self.idrhigh, self.drhightimestamp, self.idrlow, self.idrlowtimestamp, self.ec, self.rule))
-                        print("sessionsinstances: ", sessioninstances)
+                        ##print("SessionID is: ", sessionid)
+                        sessioninstances.append(Session(sessions['session_name'], self.data.Date[-1], sessions['defining_hour_start'], sessions['defining_hour_end'], sessions['session_validity'], self.drhigh, self.drhightimestamp, self.drlow, self.drlowtimestamp, self.idrhigh, self.drhightimestamp, self.idrlow, self.idrlowtimestamp, self.ec, self.rule))
+                        #print("sessionsinstances: ", sessioninstances)
                         
                         self.breaklist = []
                         self.breakinstances = []
@@ -206,10 +206,10 @@ stats = bt.run()
 dfsessions = pd.DataFrame([t.__dict__ for t in sessioninstances])
 dfbreaks = pd.DataFrame([t.__dict__ for t in breakinstances])
 
-print(dfsessions)
-print(dfbreaks)
+#print(dfsessions)
+#print(dfbreaks)
 
-print(dfsessions)
+#print(dfsessions)
 with open('sessions.csv', 'w', newline='') as csvfile:
     writer = csv.DictWriter(csvfile, fieldnames=dfsessions.columns.tolist())
     writer.writeheader = False
@@ -220,5 +220,5 @@ with open('breaks.csv', 'w', newline='') as csvfile:
     writer.writeheader = False
     writer.writerows(dfbreaks.to_dict(orient='records'))
 
-#print(stats)
+##print(stats)
 #bt.plot()
