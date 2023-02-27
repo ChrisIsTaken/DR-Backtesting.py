@@ -13,39 +13,24 @@ with open('sessions.csv') as csvfile:
     reader = csv.reader(csvfile)
 
     #Loop through each row in the CSV file
+    counts = {
+        'ADR': {'True': 0, 'False': 0},
+        'ODR': {'True': 0, 'False': 0},
+        'RDR': {'True': 0, 'False': 0}
+        }
+
     for row in reader:
-        # Check the line type
-        if row[0] == 'ADR':
-            # Increment the count of True or False values
-            if row[-2] == 'True':
-                adr_true_count += 1
-            else:
-                adr_false_count += 1
-        elif row[0] == 'ODR':
-            #Increment the count of True or False values
-            if row[-2] == 'True':
-                odr_true_count += 1
-            else:
-                odr_false_count += 1
-        elif row[0] == 'RDR':
-            #Increment the count of True or False values
-            if row[-2] == 'True':
-                rdr_true_count += 1
-            else:
-                rdr_false_count += 1
+        # Get the line type and True/False value
+        line_type = row[0]
+        tf_value = row[-2]
+    
+        # Increment the count for the line type and True/False value
+        counts[line_type][tf_value] += 1
 
-#Calculate the percentage of True and False values for each line type
-adr_true_percent = adr_true_count / (adr_true_count + adr_false_count) * 100
-adr_false_percent = adr_false_count / (adr_true_count + adr_false_count) * 100
-odr_true_percent = odr_true_count / (odr_true_count + odr_false_count) * 100
-odr_false_percent = odr_false_count / (odr_true_count + odr_false_count) * 100
-rdr_true_percent = rdr_true_count / (rdr_true_count + rdr_false_count) * 100
-rdr_false_percent = rdr_false_count / (rdr_true_count + rdr_false_count) * 100
-
-# Print the results
-print(f'ADR True percentage: {adr_true_percent:.2f}%')
-print(f'ADR False percentage: {adr_false_percent:.2f}%')
-print(f'ODR True percentage: {odr_true_percent:.2f}%')
-print(f'ODR False percentage: {odr_false_percent:.2f}%')
-print(f'RDR True percentage: {rdr_true_percent:.2f}%')
-print(f'RDR False percentage: {rdr_false_percent:.2f}%')
+for line_type in counts:
+    true_count = counts[line_type]['True']
+    false_count = counts[line_type]['False']
+    total_count = true_count + false_count
+    true_percent = true_count / total_count * 100
+    false_percent = false_count / total_count * 100
+    print(f'{line_type} True: {true_percent:.2f}% False: {false_percent:.2f}%')
