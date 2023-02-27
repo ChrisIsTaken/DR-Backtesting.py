@@ -5,7 +5,7 @@ from datetime import datetime
 from backtesting import Strategy, Backtest
 
 class Session:
-    def __init__(self, session_name, date, defining_hour_start, defining_hour_end, session_validity, dr_high, dr_high_timestamp, dr_low, dr_low_timestamp, idr_high, idr_high_timestamp, idr_low, idr_low_timestamp, ec, rule):
+    def __init__(self, session_name, date, defining_hour_start, defining_hour_end, session_validity, dr_high, dr_high_timestamp, dr_low, dr_low_timestamp, idr_high, idr_high_timestamp, idr_low, idr_low_timestamp, dr_mid, ec, rule):
         #self.session_id = session_id
         self.session_name = session_name
         self.date = date
@@ -20,11 +20,12 @@ class Session:
         self.idr_high_timestamp = idr_high_timestamp
         self.idr_low = idr_low
         self.idr_low_timestamp = idr_low_timestamp
+        self.dr_mid = dr_mid
         self.ec = ec
         self.rule = rule
 
 class Levelbreak():
-    def __init__(self, date, time, levelname, level, result, open, close):
+    def __init__(self, date, time, levelname, level, result, open, close, volume):
         #self.session_id = session_id
         self.date = date
         self.time = time
@@ -33,11 +34,13 @@ class Levelbreak():
         self.result = result
         self.open = open
         self.close = close
+        self.volume = volume
 
 #Loading data from CSV file into the dataframe that is to be passed to backtesting.py
 data = pd.read_csv(r"data\USATECHIDXUSD.csv", names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
 
 data['timestamp'] = pd.to_datetime(data['Date'] + ' ' + data['Time'], format='%Y.%m.%d %H:%M')
+#are those two lines below even neccesary?
 data['hour'] = data['timestamp'].dt.hour
 data['minute'] = data['timestamp'].dt.minute
 
@@ -73,6 +76,7 @@ class DR_Backtesting(Strategy):
         self.drhigh = ''
         self.idrlow = ''
         self.idrhigh = ''
+        self.dr_mid = ''
         self.drlowtimestamp = ''
         self.drhightimestamp = ''
         self.idrlowtimestamp = ''
@@ -111,7 +115,7 @@ class DR_Backtesting(Strategy):
 
             #check if session has yet to be identified
             if is_time_between(self.data.Time[-1], sessions['defining_hour_start'], sessions['defining_hour_end']):
-                #print("Hour has to be identified")
+                #print("Hour has to be identified")self.drhigh
                 
                 if 'openlist' in locals():
                     openlist.append((self.data.Open[-1], self.data.Time[-1]))
@@ -128,10 +132,12 @@ class DR_Backtesting(Strategy):
 
                 #Update levels and timestamps
                 #print("updating levels:")
-                self.drhigh, self.drhightimestamp = max(openlist + closelist, key=lambda x: x[0])
-                self.drlow, self.drlowtimestamp = min(openlist + closelist, key=lambda x: x[0])
-                self.idrlow, self.idrlowtimestamp = min(lowlist + closelist + openlist, key=lambda x: x[0])
-                self.idrhigh, self.idrhightimestamp = max(openlist + closelist + highlist, key=lambda x: x[0])
+                self.drhigh, self.drhightimestamp = max(openlist + closelist + highlist, key=lambda x: x[0])
+                self.drlow, self.drlowtimestamp = min(openlist + closelist + lowlist, key=lambda x: x[0])
+                self.idrlow, self.idrlowtimestamp = min(openlist + closelist, key=lambda x: x[0])
+                self.idrhigh, self.idrhightimestamp = max(openlist + closelist, key=lambda x: x[0])
+
+                self.dr_mid = (max(openlist + closelist) + min(openlist + closelist)) / 2
 
                 #print("Updated values: drhigh:", self.drhigh, "drlow: ", self.drlow, "idrhigh: ", self.idrhigh, "idrlow: ", self.idrlow)
             
@@ -144,7 +150,7 @@ class DR_Backtesting(Strategy):
                 if (self.drhigh != '') and (is_time_between(self.data.Time[-1], sessions['defining_hour_end'], sessions['session_validity']) == True):
                     #print("session is still valid and levels have been defined")
                     #print("hourflag=true")
-                    levels = [self.drlow, self.drhigh, self.idrlow, self.idrhigh]
+                    levels = [self.drlow, self.drhigh, self.idrlow, self.idrhigh, self.dr_mid]
                     #print("levels: ", levels)
                     #Check if any of the sessions is none
                     open_price, close_price = self.data.Open[-1], self.data.Close[-1]
@@ -155,6 +161,7 @@ class DR_Backtesting(Strategy):
                         if num == 1: levelname = 'dr_high'
                         if num == 2: levelname = 'idr_low'
                         if num == 3: levelname = 'idr_high'
+                        if num == 4: levelname = 'dr_mid'
 
                         #print("vars for breaklevels", open_price, close_price, level)
                         result = breaklevel(open_price, close_price, level)
@@ -162,8 +169,8 @@ class DR_Backtesting(Strategy):
                         #print("Result: ", result)
                         if result == 1 or result == 2:
                             #print("add to levelbreak")
-                            breakinstances.append(Levelbreak(self.data.Date[-1], self.data.Time[-1], levelname, level, result, open_price, close_price))
-                            self.breaklist.append([self.data.Date[-1], self.data.Time[-1], levelname, level, result, open_price, close_price])
+                            breakinstances.append(Levelbreak(self.data.Date[-1], self.data.Time[-1], levelname, level, result, open_price, close_price, self.data.Volume[-1]))
+                            self.breaklist.append([self.data.Date[-1], self.data.Time[-1], levelname, level, result, open_price, close_price, self.data.Volume[-1]])
                             #print("levelbreaklist: ", self.breaklist)
                             for x in self.breaklist:
                                 #print("levelname,result", x[2], levelname, result)
@@ -181,7 +188,7 @@ class DR_Backtesting(Strategy):
                         #if 'sessionid' in locals(): sessionid = sessionid+1
                         #else: sessionid=1
                         ##print("SessionID is: ", sessionid)
-                        sessioninstances.append(Session(sessions['session_name'], self.data.Date[-1], sessions['defining_hour_start'], sessions['defining_hour_end'], sessions['session_validity'], self.drhigh, self.drhightimestamp, self.drlow, self.drlowtimestamp, self.idrhigh, self.drhightimestamp, self.idrlow, self.idrlowtimestamp, self.ec, self.rule))
+                        sessioninstances.append(Session(sessions['session_name'], self.data.Date[-1], sessions['defining_hour_start'], sessions['defining_hour_end'], sessions['session_validity'], self.drhigh, self.drhightimestamp, self.drlow, self.drlowtimestamp, self.idrhigh, self.idrhightimestamp, self.idrlow, self.idrlowtimestamp, self.dr_mid, self.ec, self.rule))
                         #print("sessionsinstances: ", sessioninstances)
                         
                         self.breaklist = []
