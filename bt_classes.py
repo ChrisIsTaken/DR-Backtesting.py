@@ -182,19 +182,35 @@ class DR_Backtesting(Strategy):
                             self.breaklist.append([self.data.Date[-1], self.data.Time[-1], levelname, level, result, self.data.Open[-1], self.data.Close[-1], self.data.Volume[-1]])
                             #print("levelbreaklist: ", self.breaklist)
                             for x in self.breaklist:
-                                #print("levelname from list: ", x[2], "result: ", result)
-                                if self.breaklist[0][2] == 'idr_high':
-                                    if (x[2] == 'dr_low'):
+                                # initialize variables to track broken levels
+                                idr_high_broken = False
+                                idr_low_broken = False
+                                dr_high_broken = False
+                                dr_low_broken = False
+                                
+                                # loop over breaklist to check for broken levels
+                                for x in self.breaklist:
+                                    if x[2] == 'idr_high':
+                                        idr_high_broken = True
+                                    elif x[2] == 'idr_low':
+                                        idr_low_broken = True
+                                    elif x[2] == 'dr_high':
+                                        dr_high_broken = True
+                                    elif x[2] == 'dr_low':
+                                        dr_low_broken = True
+                                
+                                # check if DR Concepts Rule is true or broken
+                                if self.ec:  # early confirmation
+                                    if idr_high_broken and not dr_low_broken:
                                         self.ec = False
-                                if self.breaklist[0][2] == 'idr_low':
-                                    if (x[2] == 'dr_high'):
+                                    elif idr_low_broken and not dr_high_broken:
                                         self.ec = False
-                                if self.breaklist[0][2] == 'dr_high':
-                                    if (x[2] == 'dr_low'):
+                                elif self.rule:  # rule
+                                    if dr_high_broken and not dr_low_broken:
                                         self.rule = False
-                                if self.breaklist[0][2] == 'dr_low':
-                                    if (x[2] == 'dr_high'):
+                                    elif dr_low_broken and not dr_high_broken:
                                         self.rule = False
+
 
                                 #if (x[2] == 'dr_high') and (levelname == 'dr_high') and (result == 1):
                                 #    self.ec = False
