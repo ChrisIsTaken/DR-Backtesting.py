@@ -37,7 +37,7 @@ class Levelbreak():
         self.volume = volume
 
 #Loading data from CSV file into the dataframe that is to be passed to backtesting.py
-data = pd.read_csv(r"data\USATECHIDXUSD.csv", names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
+data = pd.read_csv(r"data\EURUSD.csv", names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
 
 data['timestamp'] = pd.to_datetime(data['Date'] + ' ' + data['Time'], format='%Y.%m.%d %H:%M')
 #are those two lines below even neccesary?
@@ -48,16 +48,22 @@ breakinstances = []
 sessioninstances = []
 
 def is_time_between(time, start, end):
-    # Convert times to number of minutes
+
+     # Convert times to number of minutes
     time = int(time[:2]) * 60 + int(time[3:])
     start = int(start[:2]) * 60 + int(start[3:])
     end = int(end[:2]) * 60 + int(end[3:])
 
+    # Adjust end time if it is earlier than start time
+    if end < start:
+        end += 1440
+
+    # Adjust time if it is before start time
+    if time < start:
+        time += 1440
+
     # Check if time is between start and end, accounting for spans over midnight
-    if start <= end:
-        return start <= time <= end
-    else:
-        return start <= time or time <= end
+    return start <= time <= end
 
 #function to detect breaks in relevant levels
 def breaklevel(open_price, close_price, level):
@@ -111,7 +117,10 @@ class DR_Backtesting(Strategy):
 
         for sessions in [self.rdr_session, self.adr_session, self.odr_session]:
             #print(sessions['session_name'])
-
+            #print("time: ", self.data.Time[-1])
+            #print("start: ", sessions['defining_hour_start'])
+            #print("end: ", sessions['defining_hour_end'])
+            #print(is_time_between(self.data.Time[-1], sessions['defining_hour_start'], sessions['defining_hour_end']))
 
             #check if session has yet to be identified
             if is_time_between(self.data.Time[-1], sessions['defining_hour_start'], sessions['defining_hour_end']):
@@ -137,7 +146,7 @@ class DR_Backtesting(Strategy):
                 self.idrlow, self.idrlowtimestamp = min(openlist + closelist, key=lambda x: x[0])
                 self.idrhigh, self.idrhightimestamp = max(openlist + closelist, key=lambda x: x[0])
 
-                self.dr_mid = (max(openlist + closelist) + min(openlist + closelist)) / 2
+                self.dr_mid = 0.5 * (self.drhigh + self.drlow)
 
                 #print("Updated values: drhigh:", self.drhigh, "drlow: ", self.drlow, "idrhigh: ", self.idrhigh, "idrlow: ", self.idrlow)
             
@@ -147,43 +156,60 @@ class DR_Backtesting(Strategy):
                 #Session's DR has been indetified, check if it's still valid
                 #print(self.data.Time[-1], "|", sessions['defining_hour_end'], "|", sessions['session_validity'])
                 #print("drhigh: ", self.drhigh)
-                if (self.drhigh != '') and (is_time_between(self.data.Time[-1], sessions['defining_hour_end'], sessions['session_validity']) == True):
+                if (self.drhigh != '') and (is_time_between(self.data.Time[-1], sessions['defining_hour_end'], sessions['session_validity'])):
                     #print("session is still valid and levels have been defined")
                     #print("hourflag=true")
                     levels = [self.drlow, self.drhigh, self.idrlow, self.idrhigh, self.dr_mid]
                     #print("levels: ", levels)
                     #Check if any of the sessions is none
-                    open_price, close_price = self.data.Open[-1], self.data.Close[-1]
-                    for num, level in enumerate(levels):
+                    
+                    for level in levels:
 
                         levelname = None
-                        if num == 0: levelname = 'dr_low'
-                        if num == 1: levelname = 'dr_high'
-                        if num == 2: levelname = 'idr_low'
-                        if num == 3: levelname = 'idr_high'
-                        if num == 4: levelname = 'dr_mid'
+                        if level == self.drlow: levelname = 'dr_low'
+                        if level == self.drhigh: levelname = 'dr_high'
+                        if level == self.idrlow: levelname = 'idr_low'
+                        if level == self.idrlow: levelname = 'idr_high'
+                        if level == self.dr_mid: levelname = 'dr_mid'
 
-                        #print("vars for breaklevels", open_price, close_price, level)
-                        result = breaklevel(open_price, close_price, level)
+                        #result = breaklevel(self.data.Open[-1], self.data.Close[-1], level)
 
                         #print("Result: ", result)
-                        if result == 1 or result == 2:
+                        if breaklevel(self.data.Open[-1], self.data.Close[-1], level) == 1 or 2:
+                            result = breaklevel(self.data.Open[-1], self.data.Close[-1], level)
                             #print("add to levelbreak")
-                            breakinstances.append(Levelbreak(self.data.Date[-1], self.data.Time[-1], levelname, level, result, open_price, close_price, self.data.Volume[-1]))
-                            self.breaklist.append([self.data.Date[-1], self.data.Time[-1], levelname, level, result, open_price, close_price, self.data.Volume[-1]])
+                            breakinstances.append(Levelbreak(self.data.Date[-1], self.data.Time[-1], levelname, level, result, self.data.Open[-1], self.data.Close[-1], self.data.Volume[-1]))
+                            self.breaklist.append([self.data.Date[-1], self.data.Time[-1], levelname, level, result, self.data.Open[-1], self.data.Close[-1], self.data.Volume[-1]])
                             #print("levelbreaklist: ", self.breaklist)
                             for x in self.breaklist:
-                                #print("levelname,result", x[2], levelname, result)
-                                if (x[2] == 'dr_high') and (levelname == 'idr_low') and (result == 1):
-                                    self.ec = False
-                                if (x[2] == 'dr_low') and (levelname == 'idr_high') and (result == 2):
-                                    self.ec = False
-                                if (x[2] == 'idr_high') and (levelname == 'idr_low') and (result == 1):
-                                    self.rule = False
-                                if (x[2] == 'idr_low') and (level == 'idr_high') and (result == 2):
-                                    self.rule = False
+                                #print("levelname from list: ", x[2], "result: ", result)
+                                if self.breaklist[0][2] == 'idr_high':
+                                    if (x[2] == 'dr_low'):
+                                        self.ec = False
+                                if self.breaklist[0][2] == 'idr_low':
+                                    if (x[2] == 'dr_high'):
+                                        self.ec = False
+                                if self.breaklist[0][2] == 'dr_high':
+                                    if (x[2] == 'dr_low'):
+                                        self.rule = False
+                                if self.breaklist[0][2] == 'dr_low':
+                                    if (x[2] == 'dr_high'):
+                                        self.rule = False
+
+                                #if (x[2] == 'dr_high') and (levelname == 'dr_high') and (result == 1):
+                                #    self.ec = False
+                                #if (x[2] == 'dr_low') and (levelname == 'dr_low') and (result == 2):
+                                #    self.ec = False
+                                #if (x[2] == 'idr_high') and (levelname == 'idr_high') and (result == 1):
+                                #    self.rule = False
+                                #if (x[2] == 'idr_low') and (level == 'idr_low') and (result == 2):
+                                #    self.rule = False
                                 #print("ec + rule = ", self.ec, self.rule)
+                    
                     if (self.data.Time[-1] == sessions['session_validity']):
+                        #print(sessions['session_name'])
+                        #print("time: ", self.data.Time[-1])
+                        #print("validity: ", sessions['session_validity'])
                         #print("create new session object with all the designated values and append it to the dataframe")
                         #if 'sessionid' in locals(): sessionid = sessionid+1
                         #else: sessionid=1
