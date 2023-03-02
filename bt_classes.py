@@ -148,11 +148,10 @@ class DR_Backtesting(Strategy):
             else:
 
                 #Session's DR has been indetified, check if it's still valid
-                #print("if self.drhigh != ''")
                 if (self.drhigh != '') and (is_time_between(self.data.Time[-1], sessions['defining_hour_end'], sessions['session_validity'])):
                     
                     levels = [self.drlow, self.drhigh, self.idrlow, self.idrhigh, self.dr_mid]
-                    #print('for level in levels')
+                    
                     for level in levels:
 
                         levelname = None
@@ -161,41 +160,15 @@ class DR_Backtesting(Strategy):
                         if level == self.idrlow: levelname = 'idr_low'
                         if level == self.idrhigh: levelname = 'idr_high'
                         if level == self.dr_mid: levelname = 'dr_mid'
-                        #print("__")
-                        #print("level: ", level, "self.drlow: ", self.drlow, "levelname =", levelname)
-                        #print("level: ", level, "self.drhigh: ", self.drhigh, "levelname =", levelname)
-                        #print("level: ", level, "self.idrlow: ", self.idrlow, "levelname =", levelname)
-                        #print("level: ", level, "self.idrhigh: ", self.idrhigh, "levelname =", levelname)
-                        #print("level: ", level, "self.dr_mid: ", self.dr_mid, "levelname =", levelname)
 
                         result = breaklevel(self.data.Open[-1], self.data.Close[-1], level)
-                        #print("if breaklevel")
+                        
                         if breaklevel(self.data.Open[-1], self.data.Close[-1], level) == 1 or 2:
-                            ##print("true")
+                            
                             breakinstances.append(Levelbreak(self.data.Date[-1], self.data.Time[-1], levelname, level, result, self.data.Open[-1], self.data.Close[-1], self.data.Volume[-1]))
                             self.breaklist.append([self.data.Date[-1], self.data.Time[-1], levelname, level, result, self.data.Open[-1], self.data.Close[-1], self.data.Volume[-1]])
                     
-                    ###print(self.breaklist)
-                    #print("for x in self.breaklist")
                     for x in self.breaklist:
-                        #print(x[2] == 'idr_high')
-                        #print(x[2] == 'idr_low')
-                        #print(x[2] == 'dr_high')
-                        #print(x[2] == 'dr_low')
-                        #print("if x2 == idr high adjaskdjas")
-
-                        #if (x[2] == 'idr_high') and (levelname == 'dr_low') and (result == 1):
-                        #    #print("setting self.ec false")
-                        #    self.ec = False
-                        #if (x[2] == 'idr_low') and (levelname == 'dr_high') and (result == 2):
-                        #    #print("setting self.ec false")
-                        #    self.ec = False
-                        #if (x[2] == 'dr_high') and (levelname == 'dr_low') and (result == 1):
-                        #    #print("setting self.rule false")
-                        #    self.rule = False
-                        #if (x[2] == 'dr_low') and (level == 'dr_high') and (result == 2):
-                        #    #print("setting self.rule false")
-                        #    self.rule = False
 
                         if x[2] == 'idr_high':
                             self.idr_high_broken = True
@@ -207,9 +180,8 @@ class DR_Backtesting(Strategy):
                             self.dr_low_broken = True
                             
                 if (self.data.Time[-1] == sessions['session_validity']):
-                    #print("self.data.time-1 == sessionvalidity", self.data.Time[-1], sessions['session_validity'])
-                    # check if DR Concepts Rule is true or broken
 
+                    #check if DR Concepts Rule is true or broken
                     if self.ec:  # early confirmation
                         if self.idr_high_broken and not self.dr_low_broken:
                             self.ec = False
