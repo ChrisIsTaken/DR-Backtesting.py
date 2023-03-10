@@ -38,7 +38,7 @@ class Levelbreak():
         self.volume = volume
 
 #Loading data from CSV file into the dataframe that is to be passed to backtesting.py
-data = pd.read_csv(r"data\EURUSD.csv", names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
+data = pd.read_csv(r"data\datasample_15-23.csv", names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
 
 data['timestamp'] = pd.to_datetime(data['Date'] + ' ' + data['Time'], format='%Y.%m.%d %H:%M')
 #are those two lines below even neccesary?
@@ -75,7 +75,7 @@ def breaklevel(open_price, close_price, level):
 
 class DR_Backtesting(Strategy):
     def init(self):
-        print("running init")
+        #print("running init")
         self.breaklist = []
         self.openlist = []
         self.closelist = []
@@ -99,36 +99,40 @@ class DR_Backtesting(Strategy):
         self.rdr_session = {
             'session_name': 'RDR',                          #Var to store the sessions name
             'defining_hour_start': "09:30",                 #Var to store time when session's defining hour starts
-            'defining_hour_end': "10:30",                   #Var to store time when session's defining hour ends
-            'session_validity': "16:00",                    #Var to store time when session is invalid
+            'defining_hour_end': "10:25",                   #Var to store time when session's defining hour ends
+            'session_validity_start': "10:30",
+            'session_validity_end': "16:00",                    #Var to store time when session is invalid
         }
 
         self.adr_session = {
             'session_name': 'ADR',                          #Var to store the sessions name
             'defining_hour_start': "19:30",                 #Var to store time when session's defining hour starts
-            'defining_hour_end': "20:30",                   #Var to store time when session's defining hour ends
-            'session_validity': "02:00",                    #Var to store time when session is invalid
+            'defining_hour_end': "20:25",                   #Var to store time when session's defining hour ends
+            'session_validity_start': "20:30",
+            'session_validity_end': "02:00",                    #Var to store time when session is invalid
         }
 
         self.odr_session = {
             'session_name': 'ODR',                          #Var to store the sessions name
             'defining_hour_start': "03:00",                 #Var to store time when session's defining hour starts
-            'defining_hour_end': "04:00",                   #Var to store time when session's defining hour ends
-            'session_validity': "08:30",                    #Var to store time when session is invalid
+            'defining_hour_end': "03:55",                   #Var to store time when session's defining hour ends
+            'session_validity_start': "04:00",
+            'session_validity_end': "08:30",                    #Var to store time when session is invalid
         }
     
 
     def next(self):
-        print("running next()")
+        #print("running next()")
         for sessions in [self.rdr_session, self.adr_session, self.odr_session]:
-            print("running session: ", sessions['session_name'])
+            #print("running session: ", sessions['session_name'])
             #check if session has yet to be identified
+            #print(self.data.Time[-1], sessions['defining_hour_start'], sessions['defining_hour_end'])
             if is_time_between(self.data.Time[-1], sessions['defining_hour_start'], sessions['defining_hour_end']):
-                print("istimebetween dhstart dhend; updating levels")
-                self.openlist.append((self.data.Open[-1], self.data.Time[-1]))
-                self.closelist.append((self.data.Close[-1], self.data.Time[-1]))
-                self.highlist.append((self.data.High[-1], self.data.Time[-1]))
-                self.lowlist.append((self.data.Low[-1], self.data.Time[-1]))
+                #print("istimebetween dhstart dhend; updating levels")
+                self.openlist.append([self.data.Open[-1], self.data.Time[-1]])
+                self.closelist.append([self.data.Close[-1], self.data.Time[-1]])
+                self.highlist.append([self.data.High[-1], self.data.Time[-1]])
+                self.lowlist.append([self.data.Low[-1], self.data.Time[-1]])
 
                 #Update levels and timestamps
                 self.drhigh, self.drhightimestamp = max(self.openlist + self.closelist + self.highlist, key=lambda x: x[0])
@@ -145,95 +149,98 @@ class DR_Backtesting(Strategy):
             else:
 
                 #Session's DR has been indetified, check if it's still valid
-                if (self.drhourflag == True) and (is_time_between(self.data.Time[-1], sessions['defining_hour_end'], sessions['session_validity'])):
-                    print("if self.drhigh != '' and time between dhend and sessionvalidity")
+                #print("self.drhourflag = ", self.drhourflag, " | ", self.data.Time[-1], sessions['session_validity_start'], sessions['session_validity_end'])
+                if (self.drhourflag == True) and (is_time_between(self.data.Time[-1], sessions['session_validity_start'], sessions['session_validity_end'])):
+                    #print("if self.drhigh != '' and time between dhend and sessionvalidity")
                     levels = [self.drhigh, self.idrhigh, self.drmid, self.idrlow, self.drlow]
-                    level_map = {self.drhigh: 'dr_high', self.idrhigh: 'idr_high', self.drmid: 'dr_mid', self.idrlow: 'idr_low', self.drlow: 'dr_low'}
+                    level_map = {self.idrhigh: 'idr_high', self.drhigh: 'dr_high', self.drmid: 'dr_mid', self.idrlow: 'idr_low', self.drlow: 'dr_low'}
                     
+                    #print("levels: ", levels)
                     for level in levels:
                         
                         levelname = level_map.get(level)
-                        print(levelname)
+                        #print(levelname)
+                        #print(self.data.Date[-1], self.data.Time[-1])
 
                         result = breaklevel(self.data.Open[-1], self.data.Close[-1], level)
                         
                         if result != None:
-                            print("entered if breaklevel with following values: ", self.data.Open[-1], self.data.Close[-1], level)
-                            print("Result = ", result)
+                            #print("entered if breaklevel with following values: ", self.data.Open[-1], self.data.Close[-1], level)
+                            #print("Result = ", result)
 
                             breakinstances.append(Levelbreak(self.data.Date[-1], self.data.Time[-1], levelname, level, result, self.data.Open[-1], self.data.Close[-1], self.data.Volume[-1]))
                             self.breaklist.append([self.data.Date[-1], self.data.Time[-1], levelname, level, result, self.data.Open[-1], self.data.Close[-1], self.data.Volume[-1]])
 
-                    if (self.data.Time[-1] == sessions['session_validity']):
+                    if (self.data.Time[-1] == sessions['session_validity_end']):
 
-                        print("time == sessionvalidity")
-                        print(self.breaklist)
+                        #print("time == sessionvalidity")
+                        #print(self.breaklist)
                         #checking for early indication
                         for breakinstance in self.breaklist:
                             if breakinstance[2] == 'idr_high': #checks if early indication is bullish
-                                print("early indication is bullish")
+                                #print("early indication is bullish")
                                 found_dr_low = False
                                 for breakinstance in self.breaklist:
                                     if breakinstance[2] == 'dr_low': # early indication has been bullish but broke
-                                        print("early indication has been bullish but broke")
+                                        #print("early indication has been bullish but broke")
                                         self.earlyindication = 2
                                         found_dr_low = True
                                         break
                                     
                                 if found_dr_low == False: # early indication has been bullish and held true
-                                    print("early indication has been bullish and held")
+                                    #print("early indication has been bullish and held")
                                     self.earlyindication = 4
                                 break
                                     
                             elif breakinstance[2] == 'idr_low': #checks if early indication is bearish
-                                print("early indication is bearish")
+                                #print("early indication is bearish")
                                 found_dr_high = False
                                 for breakinstance in self.breaklist:
                                     if breakinstance[2] == 'dr_high': #early indication has been bearish but broke
-                                        print("early indication has been bearish but broke")
+                                        #print("early indication has been bearish but broke")
                                         self.earlyindication = 1
                                         found_dr_high = True
                                         break
                                     
                                 if found_dr_high == False: #early indication has been bearish and held true
-                                    print("early indication has been bearish and held")
+                                    #print("early indication has been bearish and held")
                                     self.earlyindication = 3
                                 break
 
                         #checking for confirmation
                         for breakinstance in self.breaklist:
                             if breakinstance[2] == 'dr_high': #checks if confirmation is bullish
-                                print("confirmation has been bullish")
+                                #print("confirmation has been bullish")
                                 found_dr_low = False
                                 for breakinstance in self.breaklist:
                                     if breakinstance[2] == 'dr_low': #confirmation has been bullish but broke
-                                        print("confirmation has been bullish but broke")
+                                        #print("confirmation has been bullish but broke")
                                         self.confirmation = 2
                                         found_dr_low = True
                                         break
                                     
                                 if not found_dr_low: # confirmation has been bullish and held true
-                                    print("confirmation has been bullish and held")
+                                    #print("confirmation has been bullish and held")
                                     self.confirmation = 4
                                 #break
 
                             elif breakinstance[2] == 'dr_low': #checks if confirmation is bearish
-                                print("confirmation has been bearish")
+                                #print("confirmation has been bearish")
                                 found_dr_high = False
                                 for breakinstance in self.breaklist:
                                     if breakinstance[2] == 'dr_high': #confirmation has been bearish but broke
-                                        print("confirmation has been bearish but broke")
+                                        #print("confirmation has been bearish but broke")
                                         self.confirmation = 1
                                         found_dr_high = True
                                         break
 
                                 if found_dr_high == False: #early indication has been bearish and held true
-                                    print("confirmation has been bearish and held")
+                                    #print("confirmation has been bearish and held")
                                     self.confirmation = 3
                                 #break
 
-                        print(sessions['session_name'], self.data.Date[-1], sessions['defining_hour_start'], sessions['defining_hour_end'], sessions['session_validity'], self.drhigh, self.drhightimestamp, self.drlow, self.drlowtimestamp, self.idrhigh, self.idrhightimestamp, self.idrlow, self.idrlowtimestamp, self.drmid, self.earlyindication, self.confirmation)
-                        sessioninstances.append(Session(sessions['session_name'], self.data.Date[-1], sessions['defining_hour_start'], sessions['defining_hour_end'], sessions['session_validity'], self.drhigh, self.drhightimestamp, self.drlow, self.drlowtimestamp, self.idrhigh, self.idrhightimestamp, self.idrlow, self.idrlowtimestamp, self.drmid, self.earlyindication, self.confirmation))
+                        #print(sessions['session_name'], self.data.Date[-1], sessions['defining_hour_start'], sessions['defining_hour_end'], sessions['session_validity_end'], self.drhigh, self.drhightimestamp, self.drlow, self.drlowtimestamp, self.idrhigh, self.idrhightimestamp, self.idrlow, self.idrlowtimestamp, self.drmid, self.earlyindication, self.confirmation)
+                        sessioninstances.append(Session(sessions['session_name'], self.data.Date[-1], sessions['defining_hour_start'], sessions['defining_hour_end'], sessions['session_validity_end'], self.drhigh, self.drhightimestamp, self.drlow, self.drlowtimestamp, self.idrhigh, self.idrhightimestamp, self.idrlow, self.idrlowtimestamp, self.drmid, self.earlyindication, self.confirmation))
 
                         self.breaklist = []
                         self.breakinstances = []
