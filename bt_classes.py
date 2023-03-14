@@ -1,13 +1,11 @@
 import pandas as pd
 import csv
-from datetime import datetime
 import subprocess
 
 from backtesting import Strategy, Backtest
 
 class Session:
     def __init__(self, session_name, date, defining_hour_start, defining_hour_end, session_validity, dr_high, dr_high_timestamp, dr_low, dr_low_timestamp, idr_high, idr_high_timestamp, idr_low, idr_low_timestamp, dr_mid, earlyindication, confirmation):
-        #self.session_id = session_id
         self.session_name = session_name
         self.date = date
         self.defining_hour_start = defining_hour_start
@@ -27,7 +25,6 @@ class Session:
 
 class Levelbreak():
     def __init__(self, date, time, levelname, level, result, open, close, volume):
-        #self.session_id = session_id
         self.date = date
         self.time = time
         self.levelname = levelname
@@ -38,7 +35,7 @@ class Levelbreak():
         self.volume = volume
 
 #Loading data from CSV file into the dataframe that is to be passed to backtesting.py
-data = pd.read_csv(r"data\datasample.csv", names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
+data = pd.read_csv(r"data\USATECHIDXUSD.csv", names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
 
 breakinstances = []
 sessioninstances = []
