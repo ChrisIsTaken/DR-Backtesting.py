@@ -5,12 +5,13 @@ import subprocess
 from backtesting import Strategy, Backtest
 
 class Session:
-    def __init__(self, session_name, date, defining_hour_start, defining_hour_end, session_validity, dr_high, dr_high_timestamp, dr_low, dr_low_timestamp, idr_high, idr_high_timestamp, idr_low, idr_low_timestamp, dr_mid, earlyindication, confirmation):
+    def __init__(self, session_name, date, defining_hour_start, defining_hour_end, session_validity_start, session_validity_end, dr_high, dr_high_timestamp, dr_low, dr_low_timestamp, idr_high, idr_high_timestamp, idr_low, idr_low_timestamp, dr_mid, earlyindication, confirmation):
         self.session_name = session_name
         self.date = date
         self.defining_hour_start = defining_hour_start
         self.defining_hour_end = defining_hour_end
-        self.session_validity = session_validity
+        self.session_validity_start = session_validity_start
+        self.session_validity_end = session_validity_end
         self.dr_high = dr_high
         self.dr_high_timestamp = dr_high_timestamp
         self.dr_low = dr_low
@@ -23,7 +24,7 @@ class Session:
         self.earlyindication = earlyindication
         self.confirmation = confirmation
 
-class Levelbreak():
+class Levelbreak_Candle():
     def __init__(self, date, time, levelname, level, result, open, close, volume):
         self.date = date
         self.time = time
@@ -34,10 +35,23 @@ class Levelbreak():
         self.close = close
         self.volume = volume
 
+class Levelbreak_Wick():
+    def __init__(self, date, time, levelname, level, result, open, high, low, volume):
+        self.date = date
+        self.time = time
+        self.levelname = levelname
+        self.level = level
+        self.result = result
+        self.open = open
+        self.high = high
+        self.low = low
+        self.volume = volume
+
 #Loading data from CSV file into the dataframe that is to be passed to backtesting.py
 data = pd.read_csv(r"data\USATECHIDXUSD.csv", names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
 
-breakinstances = []
+breakinstances_candle = []
+breakinstances_wick = []
 sessioninstances = []
 
 def is_time_between(time, start, end):
@@ -68,7 +82,8 @@ def breaklevel(open_price, close_price, level):
 class DR_Backtesting(Strategy):
     def init(self):
         #print("running init")
-        self.breaklist = []
+        self.breaklist_candle = []
+        self.breaklist_wick = []
         self.openlist = []
         self.closelist = []
         self.highlist = []
@@ -154,30 +169,44 @@ class DR_Backtesting(Strategy):
                         #print(levelname)
                         #print(self.data.Date[-1], self.data.Time[-1])
 
-                        result = breaklevel(self.data.Open[-1], self.data.Close[-1], level)
+                        result_candle = breaklevel(self.data.Open[-1], self.data.Close[-1], level)
+
+                        if level == self.idrhigh or self.drhigh or self.drmid:
+                            result_wick = breaklevel(self.data.Open[-1], self.data.High[-1], level)
+                        if level == self.idrlow or self.drlow or self.drmid:
+                            result_wick = breaklevel(self.data.Open[-1], self.data.Low[-1], level)
                         
-                        if result != None:
+                        if result_candle != None:
                             #print("entered if breaklevel with following values: ", self.data.Open[-1], self.data.Close[-1], level)
                             #print("Result = ", result)
                             #print("entered if breaklevel with following values: ", self.data.Open[-1], self.data.Close[-1], level)
                             #print("Result = ", result)
 
-                            breakinstances.append(Levelbreak(self.data.Date[-1], self.data.Time[-1], levelname, level, result, self.data.Open[-1], self.data.Close[-1], self.data.Volume[-1]))
-                            self.breaklist.append([self.data.Date[-1], self.data.Time[-1], levelname, level, result, self.data.Open[-1], self.data.Close[-1], self.data.Volume[-1]])
+                            breakinstances_candle.append(Levelbreak_Candle(self.data.Date[-1], self.data.Time[-1], levelname, level, result_candle, self.data.Open[-1], self.data.Close[-1], self.data.Volume[-1]))
+                            self.breaklist_candle.append([self.data.Date[-1], self.data.Time[-1], levelname, level, result_candle, self.data.Open[-1], self.data.Close[-1], self.data.Volume[-1]])
+
+                        if result_wick != None:
+                            #print("entered if breaklevel with following values: ", self.data.Open[-1], self.data.Close[-1], level)
+                            #print("Result = ", result)
+                            #print("entered if breaklevel with following values: ", self.data.Open[-1], self.data.Close[-1], level)
+                            #print("Result = ", result)
+
+                            breakinstances_wick.append(Levelbreak_Wick(self.data.Date[-1], self.data.Time[-1], levelname, level, result_wick, self.data.Open[-1], self.data.High[-1], self.data.Low[-1], self.data.Volume[-1]))
+                            self.breaklist_wick.append([self.data.Date[-1], self.data.Time[-1], levelname, level, result_wick, self.data.Open[-1], self.data.High[-1], self.data.Low[-1], self.data.Volume[-1]])
 
                     if (self.data.Time[-1] == sessions['session_validity_end']):
 
                         #print("time == sessionvalidity")
-                        #print(self.breaklist)
+                        #print(self.breaklist_candle)
                         #print("time == sessionvalidity")
-                        #print(self.breaklist)
+                        #print(self.breaklist_candle)
                         #checking for early indication
-                        for breakinstance in self.breaklist:
+                        for breakinstance in self.breaklist_candle:
                             if breakinstance[2] == 'idr_high': #checks if early indication is bullish
                                 #print("early indication is bullish")
                                 #print("early indication is bullish")
                                 found_dr_low = False
-                                for breakinstance in self.breaklist:
+                                for breakinstance in self.breaklist_candle:
                                     if breakinstance[2] == 'dr_low': # early indication has been bullish but broke
                                         #print("early indication has been bullish but broke")
                                         #print("early indication has been bullish but broke")
@@ -195,7 +224,7 @@ class DR_Backtesting(Strategy):
                                 #print("early indication is bearish")
                                 #print("early indication is bearish")
                                 found_dr_high = False
-                                for breakinstance in self.breaklist:
+                                for breakinstance in self.breaklist_candle:
                                     if breakinstance[2] == 'dr_high': #early indication has been bearish but broke
                                         #print("early indication has been bearish but broke")
                                         #print("early indication has been bearish but broke")
@@ -210,12 +239,12 @@ class DR_Backtesting(Strategy):
                                 break
 
                         #checking for confirmation
-                        for breakinstance in self.breaklist:
+                        for breakinstance in self.breaklist_candle:
                             if breakinstance[2] == 'dr_high': #checks if confirmation is bullish
                                 #print("confirmation has been bullish")
                                 #print("confirmation has been bullish")
                                 found_dr_low = False
-                                for breakinstance in self.breaklist:
+                                for breakinstance in self.breaklist_candle:
                                     if breakinstance[2] == 'dr_low': #confirmation has been bullish but broke
                                         #print("confirmation has been bullish but broke")
                                         #print("confirmation has been bullish but broke")
@@ -233,7 +262,7 @@ class DR_Backtesting(Strategy):
                                 #print("confirmation has been bearish")
                                 #print("confirmation has been bearish")
                                 found_dr_high = False
-                                for breakinstance in self.breaklist:
+                                for breakinstance in self.breaklist_candle:
                                     if breakinstance[2] == 'dr_high': #confirmation has been bearish but broke
                                         #print("confirmation has been bearish but broke")
                                         #print("confirmation has been bearish but broke")
@@ -248,11 +277,10 @@ class DR_Backtesting(Strategy):
                                 #break
 
                         #print(sessions['session_name'], self.data.Date[-1], sessions['defining_hour_start'], sessions['defining_hour_end'], sessions['session_validity_end'], self.drhigh, self.drhightimestamp, self.drlow, self.drlowtimestamp, self.idrhigh, self.idrhightimestamp, self.idrlow, self.idrlowtimestamp, self.drmid, self.earlyindication, self.confirmation)
-                        sessioninstances.append(Session(sessions['session_name'], self.data.Date[-1], sessions['defining_hour_start'], sessions['defining_hour_end'], sessions['session_validity_end'], self.drhigh, self.drhightimestamp, self.drlow, self.drlowtimestamp, self.idrhigh, self.idrhightimestamp, self.idrlow, self.idrlowtimestamp, self.drmid, self.earlyindication, self.confirmation))
+                        sessioninstances.append(Session(sessions['session_name'], self.data.Date[-1], sessions['defining_hour_start'], sessions['defining_hour_end'], sessions['session_validity_start'], sessions['session_validity_end'], self.drhigh, self.drhightimestamp, self.drlow, self.drlowtimestamp, self.idrhigh, self.idrhightimestamp, self.idrlow, self.idrlowtimestamp, self.drmid, self.earlyindication, self.confirmation))
 
-                        self.breaklist = []
-                        self.breakinstances = []
-                        self.breaklist = []
+                        self.breakinstances_candle = []
+                        self.breaklist_candle = []
                         self.openlist = []
                         self.closelist = []
                         self.highlist = []
@@ -282,16 +310,22 @@ stats = bt.run()
 
 #Export dataframes to CSV
 dfsessions = pd.DataFrame([t.__dict__ for t in sessioninstances])
-dfbreaks = pd.DataFrame([t.__dict__ for t in breakinstances])
+dfbreaks_candle = pd.DataFrame([t.__dict__ for t in breakinstances_candle])
+dfbreaks_wick = pd.DataFrame([t.__dict__ for t in breakinstances_wick])
 
 with open('sessions.csv', 'w', newline='') as csvfile:
     writer = csv.DictWriter(csvfile, fieldnames=dfsessions.columns.tolist())
     writer.writeheader = False
     writer.writerows(dfsessions.to_dict(orient='records'))
 
-with open('breaks.csv', 'w', newline='') as csvfile:
-    writer = csv.DictWriter(csvfile, fieldnames=dfbreaks.columns.tolist())
+with open('breaks_candle.csv', 'w', newline='') as csvfile:
+    writer = csv.DictWriter(csvfile, fieldnames=dfbreaks_candle.columns.tolist())
     writer.writeheader = False
-    writer.writerows(dfbreaks.to_dict(orient='records'))
+    writer.writerows(dfbreaks_candle.to_dict(orient='records'))
+
+with open('breaks_wick.csv', 'w', newline='') as csvfile:
+    writer = csv.DictWriter(csvfile, fieldnames=dfbreaks_wick.columns.tolist())
+    writer.writeheader = False
+    writer.writerows(dfbreaks_wick.to_dict(orient='records'))
 
 subprocess.run(["python", "analyze.py"])

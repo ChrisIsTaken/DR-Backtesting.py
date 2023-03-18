@@ -42,9 +42,10 @@ adr_confirmation_bullish_held = 0
 odr_confirmation_bullish_held = 0
 
 # Open the CSV file
-with open('sessions.csv', 'r') as sessions, open('breaks.csv', 'r') as breaks, open(r"data\USATECHIDXUSD.csv") as pricedata:
+with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as candlebreaks, open('breaks_wick.csv', 'r') as wickbreaks, open(r"data\USATECHIDXUSD.csv") as pricedata:
     readersession = csv.reader(sessions)
-    readerbreaks = csv.reader(breaks)
+    readercandlebreaks = csv.reader(candlebreaks)
+    readerwickbreaks = csv.reader(wickbreaks)
     readerprice = csv.reader(pricedata)
     
     #Iterate through each row in the CSV file
