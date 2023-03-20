@@ -48,7 +48,7 @@ class Levelbreak_Wick():
         self.volume = volume
 
 #Loading data from CSV file into the dataframe that is to be passed to backtesting.py
-data = pd.read_csv(r"data\USATECHIDXUSD.csv", names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
+data = pd.read_csv(r"data\datasample.csv", names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
 
 breakinstances_candle = []
 breakinstances_wick = []
