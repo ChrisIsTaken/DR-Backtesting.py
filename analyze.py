@@ -156,23 +156,23 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
                 odr_confirmation_bullish_held += 1
 
 
-# Calculate and output the percentages
+#Calculate and output the percentages
 
-# Probability that early indication held
+#Probability that early indication held
 print("Probability for early indication holding true overall:")
 early_indication_held_count = early_indication_bearish_held + early_indication_bullish_held
 early_indication_held_percentage = (early_indication_held_count / (early_indication_bearish_broken + early_indication_bullish_broken + early_indication_held_count)) * 100
 print(f"    Probability that early indication held: {early_indication_held_percentage:.2f}%")
 print("")
 
-# Probability that confirmation held
+#Probability that confirmation held
 print("Probability for confirmation holding true overall.")
 confirmation_held_count = confirmation_bearish_held + confirmation_bullish_held
 confirmation_held_percentage = (confirmation_held_count / (confirmation_bearish_broken + confirmation_bullish_broken + confirmation_held_count)) * 100
 print(f"    Probability that confirmation held: {confirmation_held_percentage:.2f}%")
 print("")
 
-# Probability that early indication held for each of the sessions
+#Probability that early indication held for each of the sessions
 print("Probability of early indication holding true for each session:")
 rdr_early_indication_held_percentage = (rdr_early_indication_bearish_held + rdr_early_indication_bullish_held) / (rdr_early_indication_bearish_broken + rdr_early_indication_bullish_broken + (rdr_early_indication_bearish_held + rdr_early_indication_bullish_held)) * 100
 adr_early_indication_held_percentage = (adr_early_indication_bearish_held + adr_early_indication_bullish_held) / (adr_early_indication_bearish_broken + adr_early_indication_bullish_broken + (adr_early_indication_bearish_held + adr_early_indication_bullish_held)) * 100
@@ -182,7 +182,7 @@ print(f"    Probability that early indication held for ADR: {adr_early_indicatio
 print(f"    Probability that early indication held for ODR: {odr_early_indication_held_percentage:.2f}%")
 print("")
 
-# Probability that confirmation held for each of the sessions
+#Probability that confirmation held for each of the sessions
 print("Probability of confirmation holding true for each session:")
 rdr_confirmation_held_percentage = (rdr_confirmation_bearish_held + rdr_confirmation_bullish_held) / (rdr_confirmation_bearish_broken + rdr_confirmation_bullish_broken + (rdr_confirmation_bearish_held + rdr_confirmation_bullish_held)) * 100
 adr_confirmation_held_percentage = (adr_confirmation_bearish_held + adr_confirmation_bullish_held) / (adr_confirmation_bearish_broken + adr_confirmation_bullish_broken + (adr_confirmation_bearish_held + adr_confirmation_bullish_held)) * 100
