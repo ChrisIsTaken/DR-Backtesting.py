@@ -161,24 +161,24 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
             #VERY IMPORTANT TO NOTE THAT IN THE FOLLOWING CASES PRICE NEVER CLOSED ABOVE DR_HIGH
             #BEARISH EC
             #checking for the dr low break
-            print("__________")
+            #print("__________")
             for matched_break in matched_break_rows:
                 #print("entering matched_break loop")
 
-                #print("matched_break[2]", matched_break[2])
-                #print("matched_break[4]", matched_break[4])
-                if (matched_break[2] == 'idr_low') and (matched_break[4] == '1'):
+                #print("matched_break[3]", matched_break[3])
+                #print("matched_break[5]", matched_break[5])
+                if (matched_break[3] == 'idr_low') and (matched_break[5] == '1'):
                     #print("found_bear_ec_idrlow TRUE")
                     found_bear_ec_idrlow = True
 
-                if (found_bear_ec_idrlow) and (matched_break[2] == 'dr_low') and (matched_break[4] == '1'):
-                    print("found_bear_ec_breakbelow_drlow TRUE")
+                if (found_bear_ec_idrlow) and (matched_break[3] == 'dr_low') and (matched_break[5] == '1'):
+                    #print("found_bear_ec_breakbelow_drlow TRUE")
                     found_bear_ec_breakbelow_drlow = True
-                    print("#########")
-                    print(found_bear_ec_idrlow, found_bear_ec_breakbelow_drlow, matched_break[2], matched_break[4])
-                    print("#########")
-                if (found_bear_ec_idrlow == True) and (found_bear_ec_breakbelow_drlow != True) and (matched_break[2] == 'dr_mid') and (matched_break[4] == '2'):
-                    print("Bear_ec_drmid +1")
+                    #print("#########")
+                    #print(found_bear_ec_idrlow, found_bear_ec_breakbelow_drlow, matched_break[3], matched_break[5])
+                    #print("#########")
+                if (found_bear_ec_idrlow == True) and (found_bear_ec_breakbelow_drlow != True) and (matched_break[3] == 'dr_mid') and (matched_break[5] == '2'):
+                    #print("Bear_ec_drmid +1")
                     #Broke above DR Mid after IDR Low for the early indication without breaking DR Low
                     Bear_ec_drmid += 1
 
@@ -186,35 +186,35 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
 
 
                 if (found_bear_ec_drmid):
-                    print("found_bear_ec_drmid")
-                    print(found_bear_ec_drmid_idrhigh, matched_break[2], matched_break[4])
-                    if (found_bear_ec_drmid_idrhigh != True) and (matched_break[2] == 'idr_low') and (matched_break[4] == '1'):
-                        print("Bear_ec_drmid_idrlow += 1")
+                    #print("found_bear_ec_drmid")
+                    #print(found_bear_ec_drmid_idrhigh, matched_break[3], matched_break[5])
+                    if (found_bear_ec_drmid_idrhigh != True) and (matched_break[3] == 'idr_low') and (matched_break[5] == '1'):
+                        #print("Bear_ec_drmid_idrlow += 1")
                         #Broke below IDR Low after previously breaking above DR Mid after bearish early indication
                         Bear_ec_drmid_idrlow += 1
 
                         found_bear_ec_drmid_idrlow = True
 
-                    if (found_bear_ec_drmid_idrlow != True) and (matched_break[2] == 'idr_high') and (matched_break[4] == '2'):
-                        print("Bear_ec_drmid_idrhigh += 1")
+                    if (found_bear_ec_drmid_idrlow != True) and (matched_break[3] == 'idr_high') and (matched_break[5] == '2'):
+                        #print("Bear_ec_drmid_idrhigh += 1")
                         #Broke above idrhigh after breaking above drmid  without going back to idrlow once again
                         Bear_ec_drmid_idrhigh += 1
 
                         found_bear_ec_drmid_idrhigh = True
 
                 if (found_bear_ec_drmid_idrlow):
-                    print("++++++++++++")
-                    print(found_bear_ec_drmid_idrlow_drmid, matched_break[2], matched_break[4])
-                    if (found_bear_ec_drmid_idrlow_drmid != True) and (matched_break[2] == 'dr_low') and (matched_break[4] == '1'):
-                        print("Bear_ec_drmid_idrlow_drlow += 1")
+                    #print("++++++++++++")
+                    #print(found_bear_ec_drmid_idrlow_drmid, matched_break[3], matched_break[5])
+                    if (found_bear_ec_drmid_idrlow_drmid != True) and (matched_break[3] == 'dr_low') and (matched_break[5] == '1'):
+                        #print("Bear_ec_drmid_idrlow_drlow += 1")
 	            		#Broke below drlow after bear ec drmid idrlow
                         Bear_ec_drmid_idrlow_drlow += 1
 
                         found_bear_ec_drmid_idrlow_drlow = True
 
-                    print(found_bear_ec_drmid_idrlow_drlow, matched_break[2], matched_break[4])
-                    if (found_bear_ec_drmid_idrlow_drlow != True) and (matched_break[2] == 'dr_mid') and (matched_break[4] == '2'):
-                        print("Bear_ec_drmid_idrlow_drmid += 1")
+                    #print(found_bear_ec_drmid_idrlow_drlow, matched_break[3], matched_break[5])
+                    if (found_bear_ec_drmid_idrlow_drlow != True) and (matched_break[3] == 'dr_mid') and (matched_break[5] == '2'):
+                        #print("Bear_ec_drmid_idrlow_drmid += 1")
 	            		#Broke above drmid after bear ec drmid idrlow
                         Bear_ec_drmid_idrlow_drmid += 1
 
@@ -222,13 +222,13 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
 
                 if (found_bear_ec_drmid_idrhigh):
                 
-                    if (found_bear_ec_drmid_idrhigh_idrlow != True) and (matched_break[2] == 'dr_high') and (matched_break[4] == '2'):
+                    if (found_bear_ec_drmid_idrhigh_idrlow != True) and (matched_break[3] == 'dr_high') and (matched_break[5] == '2'):
                     
 	            		#Broke above DR High after previously confirming bearish early confirmation and breaking above DR Mid and IDR High
                         found_bear_ec_drmid_idrhigh_drhigh = True
 
-                    if (found_bear_ec_drmid_idrhigh_drhigh != True) and (matched_break[2] == 'idr_low') and (matched_break[4] == '1'):
-                        print("Bear_ec_drmid_idrhigh_idrlow += 1")
+                    if (found_bear_ec_drmid_idrhigh_drhigh != True) and (matched_break[3] == 'idr_low') and (matched_break[5] == '1'):
+                        #print("Bear_ec_drmid_idrhigh_idrlow += 1")
 	            		#Broke below IDR Low after bear ec drmid idrhigh 
                         Bear_ec_drmid_idrhigh_idrlow += 1
 
@@ -237,20 +237,20 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
                 if (found_bear_ec_drmid_idrhigh_idrlow == True):
                 
 	            	#checking for times when after bear ec price went to idrhigh and down to drlow afterwards
-                    if (found_bear_ec_drmid_idrhigh_idrlow_idrhigh != True) and (matched_break[2] == 'dr_low') and (matched_break[4] == '1'):
-                        print("Bear_ec_drmid_idrhigh_idrlow_drlow += 1")
+                    if (found_bear_ec_drmid_idrhigh_idrlow_idrhigh != True) and (matched_break[3] == 'dr_low') and (matched_break[5] == '1'):
+                        #print("Bear_ec_drmid_idrhigh_idrlow_drlow += 1")
 	            		#Broke below DR Low after bear ec drmid idrhigh idrlow
                         Bear_ec_drmid_idrhigh_idrlow_drlow += 1
 
                         found_bear_ec_drmid_idrhigh_idrlow_drlow = True
 
-                    if (found_bear_ec_drmid_idrhigh_idrlow_drlow != True) and (matched_break[2] == 'idr_high') and (matched_break[4] == '2'):
-                        print("Bear_ec_drmid_idrhigh_idrlow_idrhigh += 1")
+                    if (found_bear_ec_drmid_idrhigh_idrlow_drlow != True) and (matched_break[3] == 'idr_high') and (matched_break[5] == '2'):
+                        #print("Bear_ec_drmid_idrhigh_idrlow_idrhigh += 1")
                         #Broke above IDR High after bear ec drmid idrhigh idrlow
                         Bear_ec_drmid_idrhigh_idrlow_idrhigh += 1
 
                         found_bear_ec_drmid_idrhigh_idrlow_idrhigh = True
-        print("session_row[-2] before bull ec", session_row[-2])
+        #print("session_row[-2] before bull ec", session_row[-2])
         if session_row[-2] in ['2', '4']:
             #print("if session_row[-2] in ['4', '2']:")
 
@@ -259,17 +259,17 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
             #checking if price retraced to idr high
             for matched_break in matched_break_rows:
 
-                if (matched_break[2] == 'idr_high') and (matched_break[4] == '2'):
+                if (matched_break[3] == 'idr_high') and (matched_break[5] == '2'):
                     found_bull_ec_idrhigh = True
 
-                if (found_bull_ec_idrhigh) and (matched_break[2] == 'dr_high') and (matched_break[4] == '2'):
-                    print("found_bull_ec_breakabove_drhigh TRUE")
+                if (found_bull_ec_idrhigh) and (matched_break[3] == 'dr_high') and (matched_break[5] == '2'):
+                    #print("found_bull_ec_breakabove_drhigh TRUE")
                     found_bull_ec_breakabove_drhigh = True
-                    print("#########")
-                    print(found_bull_ec_idrhigh, found_bull_ec_breakabove_drhigh, matched_break[2], matched_break[4])
-                    print("#########")
-                if (found_bull_ec_idrhigh == True) and (found_bull_ec_breakabove_drhigh != True) and (matched_break[2] == 'dr_mid') and (matched_break[4] == '1'):
-                    print("Bull_ec_drmid +1")
+                    #print("#########")
+                    #print(found_bull_ec_idrhigh, found_bull_ec_breakabove_drhigh, matched_break[3], matched_break[5])
+                    #print("#########")
+                if (found_bull_ec_idrhigh == True) and (found_bull_ec_breakabove_drhigh != True) and (matched_break[3] == 'dr_mid') and (matched_break[5] == '1'):
+                    #print("Bull_ec_drmid +1")
                     #Broke above DR Mid after IDR Low for the early indication without breaking DR Low
                     Bull_ec_drmid += 1
 
@@ -278,15 +278,15 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
 
                 if (found_bull_ec_drmid):
                 
-                    if (found_bull_ec_drmid_idrlow != True) and (matched_break[2] == 'idr_high') and (matched_break[4] == '2'):
-                        print("Bull_ec_drmid_idrhigh += 1")
+                    if (found_bull_ec_drmid_idrlow != True) and (matched_break[3] == 'idr_high') and (matched_break[5] == '2'):
+                        #print("Bull_ec_drmid_idrhigh += 1")
                         #Broke above IDR high after previously breaking below DR Mid after bullish early indication
                         Bull_ec_drmid_idrhigh += 1
 
                         found_bull_ec_drmid_idrhigh = True
 
-                    if (found_bull_ec_drmid_idrhigh != True) and (matched_break[2] == 'idr_low') and (matched_break[4] == '1'):
-                        print("Bull_ec_drmid_idrlow += 1")
+                    if (found_bull_ec_drmid_idrhigh != True) and (matched_break[3] == 'idr_low') and (matched_break[5] == '1'):
+                        #print("Bull_ec_drmid_idrlow += 1")
                         #Broke above idrlow after breaking below drmid  without going back to idrhigh once again
                         Bull_ec_drmid_idrlow += 1
 
@@ -294,15 +294,15 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
 
                 if (found_bull_ec_drmid_idrhigh):
                 
-                    if (found_bull_ec_drmid_idrhigh_drmid != True) and (matched_break[2] == 'dr_high') and (matched_break[4] == '2'):
-                        print("Bull_ec_drmid_idrhigh_drhigh += 1")
+                    if (found_bull_ec_drmid_idrhigh_drmid != True) and (matched_break[3] == 'dr_high') and (matched_break[5] == '2'):
+                        #print("Bull_ec_drmid_idrhigh_drhigh += 1")
 	            		#Broke above drhigh after bull ec drmid idrhigh
                         Bull_ec_drmid_idrhigh_drhigh += 1
 
                         found_bull_ec_drmid_idrhigh_drhigh = True
 
-                    if (found_bull_ec_drmid_idrhigh_drhigh != True) and (matched_break[2] == 'dr_mid') and (matched_break[4] == '1'):
-                        print("Bull_ec_drmid_idrhigh_drmid += 1")
+                    if (found_bull_ec_drmid_idrhigh_drhigh != True) and (matched_break[3] == 'dr_mid') and (matched_break[5] == '1'):
+                        #print("Bull_ec_drmid_idrhigh_drmid += 1")
 	            		#Broke above drmid after bear ec drmid idrlow
                         Bull_ec_drmid_idrhigh_drmid += 1
 
@@ -310,13 +310,13 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
 
                 if (found_bull_ec_drmid_idrlow):
                 
-                    if (found_bull_ec_drmid_idrlow_idrhigh != True) and (matched_break[2] == 'dr_low') and (matched_break[4] == '1'):
+                    if (found_bull_ec_drmid_idrlow_idrhigh != True) and (matched_break[3] == 'dr_low') and (matched_break[5] == '1'):
                     
 	            		#Broke above DR High after previously confirming bearish early confirmation and breaking above DR Mid and IDR High
                         found_bull_ec_drmid_idrlow_drlow = True
 
-                    if (found_bull_ec_drmid_idrlow_drlow != True) and (matched_break[2] == 'idr_high') and (matched_break[4] == '2'):
-                        print("Bull_ec_drmid_idrlow_idrhigh += 1")
+                    if (found_bull_ec_drmid_idrlow_drlow != True) and (matched_break[3] == 'idr_high') and (matched_break[5] == '2'):
+                        #print("Bull_ec_drmid_idrlow_idrhigh += 1")
 	            		#Broke above IDR High after bull ec drmid idrlow 
                         Bull_ec_drmid_idrlow_idrhigh += 1
 
@@ -325,15 +325,15 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
                 if (found_bull_ec_drmid_idrlow_idrhigh == True):
                 
 	            	#checking for times when after bull ec price went to idrlow and up to drhigh afterwards
-                    if (found_bull_ec_drmid_idrlow_idrhigh_idrlow != True) and (matched_break[2] == 'dr_low') and (matched_break[4] == '1'):
-                        print("Bull_ec_drmid_idrlow_idrhigh_drhigh += 1")
+                    if (found_bull_ec_drmid_idrlow_idrhigh_idrlow != True) and (matched_break[3] == 'dr_low') and (matched_break[5] == '1'):
+                        #print("Bull_ec_drmid_idrlow_idrhigh_drhigh += 1")
 	            		#Broke below DR Low after bear ec drmid idrhigh idrlow
                         Bull_ec_drmid_idrlow_idrhigh_drhigh += 1
 
                         found_bull_ec_drmid_idrlow_idrhigh_drhigh = True
 
-                    if (found_bull_ec_drmid_idrlow_idrhigh_drhigh != True) and (matched_break[2] == 'idr_low') and (matched_break[4] == '1'):
-                        print("Bull_ec_drmid_idrlow_idrhigh_idrlow += 1")
+                    if (found_bull_ec_drmid_idrlow_idrhigh_drhigh != True) and (matched_break[3] == 'idr_low') and (matched_break[5] == '1'):
+                        #print("Bull_ec_drmid_idrlow_idrhigh_idrlow += 1")
                         #Broke above IDR Low after bull ec drmid idrlow idrhigh
                         Bull_ec_drmid_idrlow_idrhigh_idrlow += 1
 
@@ -349,18 +349,18 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
                 #essentially you are checking for a idrlow followed by drlow
                 #therefore you check for the break below idrlow and for the drlow breaks in order to search for drmid also checking if idrlow has been found already in the drlow check in order for the sequence to be right
 	
-                if (matched_break[2] == 'idr_low') and (matched_break[4] == '1'):
-                    print("found_bear_ec_breakbelow_idrlow = True")
+                if (matched_break[3] == 'idr_low') and (matched_break[5] == '1'):
+                    #print("found_bear_ec_breakbelow_idrlow = True")
                     found_bear_ec_breakbelow_idrlow = True
 
-                if (found_bear_ec_breakbelow_idrlow == True) and (matched_break[2] == 'dr_low') and (matched_break[4] == '1'):
-                    print("found_bear_ec_breakbelow_drlow = True")
+                if (found_bear_ec_breakbelow_idrlow == True) and (matched_break[3] == 'dr_low') and (matched_break[5] == '1'):
+                    #print("found_bear_ec_breakbelow_drlow = True")
                     found_bear_ec_breakbelow_drlow = True
 
-                print("***************")
-                print(found_bear_ec_breakbelow_idrlow, found_bear_ec_breakbelow_drlow, matched_break[2], matched_break[4])
-                if (found_bear_ec_breakbelow_idrlow == True) and (found_bear_ec_breakbelow_drlow == True) and (matched_break[2] == 'dr_mid') and (matched_break[4] == '2'):
-                    print("Bear_c_drmid += 1")
+                #print("***************")
+                #print(found_bear_ec_breakbelow_idrlow, found_bear_ec_breakbelow_drlow, matched_break[3], matched_break[5])
+                if (found_bear_ec_breakbelow_idrlow == True) and (found_bear_ec_breakbelow_drlow == True) and (matched_break[3] == 'dr_mid') and (matched_break[5] == '2'):
+                    #print("Bear_c_drmid += 1")
                     #Broke above DR Mid after IDR Low and DR Low for the confirmation
                     Bear_c_drmid += 1
 
@@ -368,17 +368,17 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
 
 
                 if (found_bear_c_drmid):
-                    print("''''''''''''''''")
-                    print(found_bear_c_drmid_idrhigh, matched_break[2], matched_break[4])
-                    if (found_bear_c_drmid_idrhigh != True) and (matched_break[2] == 'idr_low') and (matched_break[4] == '1'):
-                        print("Bear_c_drmid_idrlow += 1")
+                    #print("''''''''''''''''")
+                    #print(found_bear_c_drmid_idrhigh, matched_break[3], matched_break[5])
+                    if (found_bear_c_drmid_idrhigh != True) and (matched_break[3] == 'idr_low') and (matched_break[5] == '1'):
+                        #print("Bear_c_drmid_idrlow += 1")
                         #Broke below IDR Low after previously breaking above DR Mid after bearish early indication and confirmation
                         Bear_c_drmid_idrlow += 1
 
                         found_bear_c_drmid_idrlow = True
 
-                    if (found_bear_c_drmid_idrlow != True) and (matched_break[2] == 'idr_high') and (matched_break[4] == '2'):
-                        print("Bear_c_drmid_idrhigh += 1")
+                    if (found_bear_c_drmid_idrlow != True) and (matched_break[3] == 'idr_high') and (matched_break[5] == '2'):
+                        #print("Bear_c_drmid_idrhigh += 1")
                         #Broke above idrhigh after breaking above drmid without going back to idrlow once again
                         Bear_c_drmid_idrhigh += 1
 
@@ -386,15 +386,15 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
 
                 if (found_bear_c_drmid_idrlow):
                 
-                    if (found_bear_c_drmid_idrlow_drmid != True) and (matched_break[2] == 'dr_low') and (matched_break[4] == '1'):
-                        print("Bear_c_drmid_idrlow_drlow += 1")
+                    if (found_bear_c_drmid_idrlow_drmid != True) and (matched_break[3] == 'dr_low') and (matched_break[5] == '1'):
+                        #print("Bear_c_drmid_idrlow_drlow += 1")
 	            		#Broke below drlow after bear c drmid idrlow
                         Bear_c_drmid_idrlow_drlow += 1
 
                         found_bear_c_drmid_idrlow_drlow = True
 
-                    if (found_bear_c_drmid_idrlow_drlow != True) and (matched_break[2] == 'dr_mid') and (matched_break[4] == '2'):
-                        print("Bear_c_drmid_idrlow_drmid += 1")
+                    if (found_bear_c_drmid_idrlow_drlow != True) and (matched_break[3] == 'dr_mid') and (matched_break[5] == '2'):
+                        #print("Bear_c_drmid_idrlow_drmid += 1")
 	            		#Broke above drmid after bear c drmid idrlow
                         Bear_c_drmid_idrlow_drmid += 1
 
@@ -402,30 +402,30 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
 
                 if (found_bear_c_drmid_idrhigh):
                 
-                    if (found_bear_c_drmid_idrhigh_idrlow != True) and (matched_break[2] == 'dr_high') and (matched_break[4] == '2'):
+                    if (found_bear_c_drmid_idrhigh_idrlow != True) and (matched_break[3] == 'dr_high') and (matched_break[5] == '2'):
                     
 	            		#Broke above DR High after previous bearish confirmation and breaking above DR Mid and IDR High (essentially breaking confirmation)
                         found_bear_c_drmid_idrhigh_drhigh = True
 
-                    if (found_bear_c_drmid_idrhigh_drhigh != True) and (matched_break[2] == 'idr_low') and (matched_break[4] == '1'):
-                        print("Bear_c_drmid_idrhigh_idrlow += 1")
+                    if (found_bear_c_drmid_idrhigh_drhigh != True) and (matched_break[3] == 'idr_low') and (matched_break[5] == '1'):
+                        #print("Bear_c_drmid_idrhigh_idrlow += 1")
 	            		#Broke below IDR Low after bear ec drmid idrhigh 
                         Bear_c_drmid_idrhigh_idrlow += 1
 
                         found_bear_c_drmid_idrhigh_idrlow = True
 
                 if (found_bear_c_drmid_idrhigh_idrlow == True):
-                    print("------------", found_bear_c_drmid_idrhigh_idrlow_idrhigh, matched_break[2], matched_break[4])
+                    #print("------------", found_bear_c_drmid_idrhigh_idrlow_idrhigh, matched_break[3], matched_break[5])
 	            	#checking for times when after bear c price went to idrhigh and down to drlow afterwards
-                    if (found_bear_c_drmid_idrhigh_idrlow_idrhigh != True) and (matched_break[2] == 'dr_low') and (matched_break[4] == '1'):
-                        print("Bear_c_drmid_idrhigh_idrlow_drlow += 1")
+                    if (found_bear_c_drmid_idrhigh_idrlow_idrhigh != True) and (matched_break[3] == 'dr_low') and (matched_break[5] == '1'):
+                        #print("Bear_c_drmid_idrhigh_idrlow_drlow += 1")
 	            		#Broke below DR Low after bear c drmid idrhigh idrlow
                         Bear_c_drmid_idrhigh_idrlow_drlow += 1
 
                         found_bear_c_drmid_idrhigh_idrlow_drlow = True
-                    print("~~~~~~~~~~~", found_bear_c_drmid_idrhigh_idrlow_drlow, matched_break[2], matched_break[4])
-                    if (found_bear_c_drmid_idrhigh_idrlow_drlow != True) and (matched_break[2] == 'idr_high') and (matched_break[4] == '2'):
-                        print("Bear_c_drmid_idrhigh_idrlow_idrhigh += 1")
+                    #print("~~~~~~~~~~~", found_bear_c_drmid_idrhigh_idrlow_drlow, matched_break[3], matched_break[5])
+                    if (found_bear_c_drmid_idrhigh_idrlow_drlow != True) and (matched_break[3] == 'idr_high') and (matched_break[5] == '2'):
+                        #print("Bear_c_drmid_idrhigh_idrlow_idrhigh += 1")
                         #Broke above IDR High after bear c drmid idrhigh idrlow
                         Bear_c_drmid_idrhigh_idrlow_idrhigh += 1
 
@@ -440,17 +440,17 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
 	
                 #essentially you are checking for a idrhigh followed by drhigh
                 #therefore you check for the break above idrhigh and for the drhigh breaks in order to search for drmid also checking if idrhigh has been found already in the drhigh check in order for the sequence to be right
-                print(":::::::::::::", matched_break[2], matched_break[4])
-                if (matched_break[2] == 'idr_high') and (matched_break[4] == '2'):
+                #print(":::::::::::::", matched_break[3], matched_break[5])
+                if (matched_break[3] == 'idr_high') and (matched_break[5] == '2'):
                 
                     found_bull_c_idrhigh = True
-                print(";;;;;;;;;", found_bull_c_idrhigh, matched_break[2], matched_break[4])
-                if (found_bull_c_idrhigh == True) and (matched_break[2] == 'dr_high') and (matched_break[4] == '2'):
+                #print(";;;;;;;;;", found_bull_c_idrhigh, matched_break[3], matched_break[5])
+                if (found_bull_c_idrhigh == True) and (matched_break[3] == 'dr_high') and (matched_break[5] == '2'):
                 
                     found_bull_c_breakabove_drhigh = True
 
-                if (found_bull_c_idrhigh == True) and (found_bull_c_breakabove_drhigh == True) and (matched_break[2] == 'dr_mid') and (matched_break[4] == '1'):
-                    print("Bull_c_drmid += 1")
+                if (found_bull_c_idrhigh == True) and (found_bull_c_breakabove_drhigh == True) and (matched_break[3] == 'dr_mid') and (matched_break[5] == '1'):
+                    #print("Bull_c_drmid += 1")
                     #Broke below DR Mid after IDR High for the early indication without breaking DR High
                     Bull_c_drmid += 1
 
@@ -459,15 +459,15 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
 
                 if (found_bull_c_drmid):
                 
-                    if (found_bull_c_drmid_idrlow != True) and (matched_break[2] == 'idr_high') and (matched_break[4] == '2'):
-                        print("Bull_c_drmid_idrhigh += 1")
+                    if (found_bull_c_drmid_idrlow != True) and (matched_break[3] == 'idr_high') and (matched_break[5] == '2'):
+                        #print("Bull_c_drmid_idrhigh += 1")
                         #Broke above IDR high after previously breaking above DR Mid after bullish early indication and confirmation
                         Bull_c_drmid_idrhigh += 1
 
                         found_bull_c_drmid_idrhigh = True
 
-                    if (found_bull_c_drmid_idrhigh != True) and (matched_break[2] == 'idr_low') and (matched_break[4] == '1'):
-                        print("Bull_c_drmid_idrlow += 1")
+                    if (found_bull_c_drmid_idrhigh != True) and (matched_break[3] == 'idr_low') and (matched_break[5] == '1'):
+                        #print("Bull_c_drmid_idrlow += 1")
                         #Broke below idrlow after breaking above drmid without going back to idrhigh once again
                         Bull_c_drmid_idrlow += 1
 
@@ -475,15 +475,15 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
 
                 if (found_bull_c_drmid_idrhigh):
                 
-                    if (found_bull_c_drmid_idrhigh_drmid != True) and (matched_break[2] == 'dr_high') and (matched_break[4] == '2'):
-                        print("Bull_c_drmid_idrhigh_drhigh += 1")
+                    if (found_bull_c_drmid_idrhigh_drmid != True) and (matched_break[3] == 'dr_high') and (matched_break[5] == '2'):
+                        #print("Bull_c_drmid_idrhigh_drhigh += 1")
 	            		#Broke above drhigh after bull c drmid idrhigh
                         Bull_c_drmid_idrhigh_drhigh += 1
 
                         found_bull_c_drmid_idrhigh_drhigh = True
 
-                    if (found_bull_c_drmid_idrhigh_drhigh != True) and (matched_break[2] == 'dr_mid') and (matched_break[4] == '1'):
-                        print("Bull_c_drmid_idrhigh_drmid += 1")
+                    if (found_bull_c_drmid_idrhigh_drhigh != True) and (matched_break[3] == 'dr_mid') and (matched_break[5] == '1'):
+                        #print("Bull_c_drmid_idrhigh_drmid += 1")
 	            		#Broke above drmid aft er bull c drmid idrlow
                         Bull_c_drmid_idrhigh_drmid += 1
 
@@ -491,13 +491,13 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
 
                 if (found_bull_c_drmid_idrlow):
                 
-                    if (found_bull_c_drmid_idrlow_idrhigh != True) and (matched_break[2] == 'dr_low') and (matched_break[4] == '1'):
+                    if (found_bull_c_drmid_idrlow_idrhigh != True) and (matched_break[3] == 'dr_low') and (matched_break[5] == '1'):
                     
 	            		#Broke above DR High after previously confirming bull early confirmation and confirmation and breaking below DR Mid and IDR High
                         found_bull_c_drmid_idrlow_drlow = True
 
-                    if (found_bull_c_drmid_idrlow_drlow != True) and (matched_break[2] == 'idr_high') and (matched_break[4] == '2'):
-                        print("Bull_c_drmid_idrlow_idrhigh += 1")
+                    if (found_bull_c_drmid_idrlow_drlow != True) and (matched_break[3] == 'idr_high') and (matched_break[5] == '2'):
+                        #print("Bull_c_drmid_idrlow_idrhigh += 1")
 	            		#Broke above IDR High after bull c drmid idrlow 
                         Bull_c_drmid_idrlow_idrhigh += 1
 
@@ -506,78 +506,91 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
                 if (found_bull_c_drmid_idrlow_idrhigh == True):
                 
 	            	#checking for times when after bull c price went to idrlow and up to drhigh afterwards
-                    if (found_bull_c_drmid_idrlow_idrhigh_idrlow != True) and (matched_break[2] == 'dr_low') and (matched_break[4] == '1'):
-                        print("Bull_c_drmid_idrlow_idrhigh_drhigh += 1")
+                    if (found_bull_c_drmid_idrlow_idrhigh_idrlow != True) and (matched_break[3] == 'dr_low') and (matched_break[5] == '1'):
+                        #print("Bull_c_drmid_idrlow_idrhigh_drhigh += 1")
 	            		#Broke below DR Low after bear c drmid idrhigh idrlow
                         Bull_c_drmid_idrlow_idrhigh_drhigh += 1
 
                         found_bull_c_drmid_idrlow_idrhigh_drhigh = True
 
-                    if (found_bull_c_drmid_idrlow_idrhigh_drhigh != True) and (matched_break[2] == 'idr_low') and (matched_break[4] == '1'):
-                        print("Bull_c_drmid_idrlow_idrhigh_idrlow += 1")
+                    if (found_bull_c_drmid_idrlow_idrhigh_drhigh != True) and (matched_break[3] == 'idr_low') and (matched_break[5] == '1'):
+                        #print("Bull_c_drmid_idrlow_idrhigh_idrlow += 1")
                         #Broke above IDR Low after bull c drmid idrlow idrhigh
                         Bull_c_drmid_idrlow_idrhigh_idrlow += 1
 
                         found_bull_c_drmid_idrlow_idrhigh_idrlow = True
-
 
     #Calculate probabilities
     #print("Calculating probabilities")
 
     #BEAR EC:
     #Probability of price retracing straight to idrlow after price went to idrhigh after bearish early indication
-    Bear_ec_drmid_idrhigh_idrlow_percentage = (Bear_ec_drmid_idrhigh_idrlow / Bear_ec_drmid_idrhigh) * 100
+    print("")
+    print("-------------------------------------------------")
+    print(Bear_ec_drmid_idrhigh_idrlow, Bear_ec_drmid_idrhigh)
+    Bear_ec_drmid_idrhigh_idrlow_percentage = Bear_ec_drmid_idrhigh_idrlow / (Bear_ec_drmid_idrhigh) * 100
     print(f"Probability of price retracing straight to idrlow after price went to idrhigh after bearish early indication: {Bear_ec_drmid_idrhigh_idrlow_percentage:.2f}%")
 
     #Probability of price retracing straight down to drlow past idrlow after price went to idrhigh after bearish early indication
-    Bear_ec_drmid_idrhigh_idrlow_drlow_percentage = (Bear_ec_drmid_idrhigh_idrlow_drlow / Bear_ec_drmid_idrhigh)
+    print(Bear_ec_drmid_idrhigh_idrlow_drlow, Bear_ec_drmid_idrhigh)
+    Bear_ec_drmid_idrhigh_idrlow_drlow_percentage = Bear_ec_drmid_idrhigh_idrlow_drlow / (Bear_ec_drmid_idrhigh) * 100
     print(f"Probability of price retracing straight down to drlow past idrlow after price went to idrhigh after bearish early indication: {Bear_ec_drmid_idrhigh_idrlow_drlow_percentage:.2f}%")
 
     #Probability that price closes below drlow after price closed below idrlow after bearish early indication and price going up to idrhigh
-    Bear_ec_drmid_idrhigh_idrlow_drlow_after_idrlow_percentage = (Bear_ec_drmid_idrhigh_idrlow_drlow / Bear_ec_drmid_idrhigh_idrlow)
+    print(Bear_ec_drmid_idrhigh_idrlow_drlow, Bear_ec_drmid_idrhigh_idrlow)
+    Bear_ec_drmid_idrhigh_idrlow_drlow_after_idrlow_percentage = Bear_ec_drmid_idrhigh_idrlow_drlow / (Bear_ec_drmid_idrhigh_idrlow) * 100
     print(f"Probability that price closes below drlow after price closed below idrlow after bearish early indication and price going up to idrhigh: {Bear_ec_drmid_idrhigh_idrlow_drlow_after_idrlow_percentage:.2f}%")
-
-    #print("______________________________________________")
 
     #BULL EC
     #Probability of price retracing straight to idrhigh after price went to idrlow after bullish early indication
-    Bull_ec_drmid_idrlow_idrhigh_percentage = (Bull_ec_drmid_idrlow_idrhigh / Bull_ec_drmid_idrlow) * 100
+    print("")
+    print("-------------------------------------------------")
+    print(Bull_ec_drmid_idrlow_idrhigh, Bull_ec_drmid_idrlow)
+    Bull_ec_drmid_idrlow_idrhigh_percentage = Bull_ec_drmid_idrlow_idrhigh / (Bull_ec_drmid_idrlow) * 100
     print(f"Probability of price retracing straight to idrhigh after price went to idrlow after bullish early indication: {Bull_ec_drmid_idrlow_idrhigh_percentage:.2f}%")
 
     #Probability of price retracing straight up to drhigh past idrhigh after price went to idrlow after bullish early indication
-    Bull_ec_drmid_idrlow_idrhigh_drhigh_percentage = (Bull_ec_drmid_idrlow_idrhigh_drhigh / Bull_ec_drmid_idrlow)
+    print(Bull_ec_drmid_idrlow_idrhigh_drhigh, Bull_ec_drmid_idrlow)
+    Bull_ec_drmid_idrlow_idrhigh_drhigh_percentage = Bull_ec_drmid_idrlow_idrhigh_drhigh / (Bull_ec_drmid_idrlow) * 100
     print(f"Probability of price retracing straight up to drhigh past idrhigh after price went to idrlow after bullish early indication: {Bull_ec_drmid_idrlow_idrhigh_drhigh_percentage:.2f}%")
 
     #Probability that price closes above drhigh after price closed above idrhigh after bull early indication and price going fown to idrlow
-    Bull_ec_drmid_idrlow_idrhigh_drhigh_after_idrhigh_percentage = (Bull_ec_drmid_idrlow_idrhigh_drhigh / Bull_ec_drmid_idrlow_idrhigh)
+    print(Bull_ec_drmid_idrlow_idrhigh_drhigh, Bull_ec_drmid_idrlow_idrhigh)
+    Bull_ec_drmid_idrlow_idrhigh_drhigh_after_idrhigh_percentage = Bull_ec_drmid_idrlow_idrhigh_drhigh / (Bull_ec_drmid_idrlow_idrhigh) * 100
     print(f"Probability that price closes above drhigh after price closed above idrhigh after bull early indication and price going fown to idrlow: {Bull_ec_drmid_idrlow_idrhigh_drhigh_after_idrhigh_percentage:.2f}%")
-
-    #print("______________________________________________")
 
     #BEAR C:
     #Probability of price retracing straight to idrlow after price went to idrhigh after bearish confirmation
-    Bear_c_drmid_idrhigh_idrlow_percentage = (Bear_c_drmid_idrhigh_idrlow / Bear_c_drmid_idrhigh) * 100
+    print("")
+    print("-------------------------------------------------")
+    print(Bear_c_drmid_idrhigh_idrlow, Bear_c_drmid_idrhigh)
+    Bear_c_drmid_idrhigh_idrlow_percentage = Bear_c_drmid_idrhigh_idrlow / (Bear_c_drmid_idrhigh) * 100
     print(f"Probability of price retracing straight to idrlow after price went to idrhigh after bearish confirmation: {Bear_c_drmid_idrhigh_idrlow_percentage:.2f}%")
 
     #Probability of price retracing straight down to drlow past idrlow after price went to idrhigh after bearish confirmation
-    Bear_c_drmid_idrhigh_idrlow_drlow_percentrage = (Bear_c_drmid_idrhigh_idrlow_drlow / Bear_c_drmid_idrhigh) * 100
+    print(Bear_c_drmid_idrhigh_idrlow_drlow, Bear_c_drmid_idrhigh)
+    Bear_c_drmid_idrhigh_idrlow_drlow_percentrage = Bear_c_drmid_idrhigh_idrlow_drlow / (Bear_c_drmid_idrhigh) * 100
     print(f"Probability of price retracing straight down to drlow past idrlow after price went to idrhigh after bearish confirmation: {Bear_c_drmid_idrhigh_idrlow_drlow_percentrage:.2f}%")
 
     #Probability that price closes below drlow after price closed below idrlow after bearish confirmation and price going up to idrhigh
-    Bear_c_drmid_idrhigh_idrlow_after_idrlow_percentage = (Bear_c_drmid_idrhigh_idrlow_drlow / Bear_c_drmid_idrhigh_idrlow)
+    print(Bear_c_drmid_idrhigh_idrlow_drlow, Bear_c_drmid_idrhigh_idrlow)
+    Bear_c_drmid_idrhigh_idrlow_after_idrlow_percentage = Bear_c_drmid_idrhigh_idrlow_drlow / (Bear_c_drmid_idrhigh_idrlow) * 100
     print(f"Probability that price closes below drlow after price closed below idrlow after bearish confirmation and price going up to idrhigh: {Bear_c_drmid_idrhigh_idrlow_after_idrlow_percentage:.2f}%")
-
-    #print("______________________________________________")
 
     #BULL C:
     #Probability of price retracing straight to idrhigh after price went to idrlow after bullish early indicaiton
-    Bull_c_drmid_idrlow_idrhigh_percentage = (Bull_c_drmid_idrlow_idrhigh / Bull_c_drmid_idrlow) * 100
+    print("")
+    print("-------------------------------------------------")
+    print(Bull_c_drmid_idrlow_idrhigh, Bull_c_drmid_idrlow)
+    Bull_c_drmid_idrlow_idrhigh_percentage = Bull_c_drmid_idrlow_idrhigh / (Bull_c_drmid_idrlow) * 100
     print(f"Probability of price retracing straight to idrhigh after price went to idrlow after bullish early indicaiton: {Bull_c_drmid_idrlow_idrhigh_percentage:.2f}%")
 
     #Probability of price retracing straight up to drhigh past idrhigh after price went to idrlow after bullish confirmation
-    Bull_c_drmid_idrlow_idrhigh_drhigh_percentage = (Bull_c_drmid_idrlow_idrhigh_drhigh / Bull_c_drmid_idrlow)
+    print(Bull_c_drmid_idrlow_idrhigh_drhigh, Bull_c_drmid_idrlow)
+    Bull_c_drmid_idrlow_idrhigh_drhigh_percentage = Bull_c_drmid_idrlow_idrhigh_drhigh / (Bull_c_drmid_idrlow) * 100
     print(f"Probability of price retracing straight up to drhigh past idrhigh after price went to idrlow after bullish confirmation: {Bull_c_drmid_idrlow_idrhigh_drhigh_percentage:.2f}%")
 
     #Probability that price closes above drhigh after price closed above idrhigh after bull early indication and price going down to idrlow
-    Bull_c_drmid_idrlow_idrhigh_drhigh_after_idrhigh_percentage = (Bull_c_drmid_idrlow_idrhigh_drhigh / Bull_c_drmid_idrlow_idrhigh)
+    print(Bull_c_drmid_idrlow_idrhigh_drhigh, Bull_c_drmid_idrlow_idrhigh)
+    Bull_c_drmid_idrlow_idrhigh_drhigh_after_idrhigh_percentage = Bull_c_drmid_idrlow_idrhigh_drhigh / (Bull_c_drmid_idrlow_idrhigh) * 100
     print(f"Probability that price closes above drhigh after price closed above idrhigh after bull early indication and price going down to idrlow: {Bull_c_drmid_idrlow_idrhigh_drhigh_after_idrhigh_percentage:.2f}%")

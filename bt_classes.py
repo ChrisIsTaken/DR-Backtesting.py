@@ -1,8 +1,11 @@
 import pandas as pd
 import csv
 import subprocess
+import datetime
 
 from backtesting import Strategy, Backtest
+
+print(datetime.datetime.now().strftime("%H:%M:%S"))
 
 class Session:
     def __init__(self, session_name, date, defining_hour_start, defining_hour_end, session_validity_start, session_validity_end, dr_high, dr_high_timestamp, dr_low, dr_low_timestamp, idr_high, idr_high_timestamp, idr_low, idr_low_timestamp, dr_mid, earlyindication, confirmation):
@@ -25,9 +28,10 @@ class Session:
         self.confirmation = confirmation
 
 class Levelbreak_Candle():
-    def __init__(self, date, time, levelname, level, result, open, close, volume):
+    def __init__(self, date, time, sessionname, levelname, level, result, open, close, volume):
         self.date = date
         self.time = time
+        self.sessionname = sessionname
         self.levelname = levelname
         self.level = level
         self.result = result
@@ -48,7 +52,7 @@ class Levelbreak_Wick():
         self.volume = volume
 
 #Loading data from CSV file into the dataframe that is to be passed to backtesting.py
-data = pd.read_csv(r"data\datasample.csv", names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
+data = pd.read_csv(r"data\USATECHIDXUSD.csv", names=["Date", "Time", "Open", "High", "Low", "Close", "Volume"])
 
 breakinstances_candle = []
 breakinstances_wick = []
@@ -162,15 +166,13 @@ class DR_Backtesting(Strategy):
                     levels = [self.drhigh, self.idrhigh, self.drmid, self.idrlow, self.drlow]
                     level_map = {self.idrhigh: 'idr_high', self.drhigh: 'dr_high', self.drmid: 'dr_mid', self.idrlow: 'idr_low', self.drlow: 'dr_low'}
                     
-                    #print("levels: ", levels)
+                    #print("levels: ", levels)^
                     for level in levels:
                         
                         levelname = level_map.get(level)
-                        #print(levelname)
                         #print(self.data.Date[-1], self.data.Time[-1])
-
                         result_candle = breaklevel(self.data.Open[-1], self.data.Close[-1], level)
-
+                        #print(levelname, sessions['session_name'], result_candle, self.data.Open[-1], self.data.Close[-1], level)
                         if level == self.idrhigh or self.drhigh or self.drmid:
                             result_wick = breaklevel(self.data.Open[-1], self.data.High[-1], level)
                         if level == self.idrlow or self.drlow or self.drmid:
@@ -181,9 +183,10 @@ class DR_Backtesting(Strategy):
                             #print("Result = ", result)
                             #print("entered if breaklevel with following values: ", self.data.Open[-1], self.data.Close[-1], level)
                             #print("Result = ", result)
+                            #print("^^^^^^^^^^", levelname, result_candle)
 
-                            breakinstances_candle.append(Levelbreak_Candle(self.data.Date[-1], self.data.Time[-1], levelname, level, result_candle, self.data.Open[-1], self.data.Close[-1], self.data.Volume[-1]))
-                            self.breaklist_candle.append([self.data.Date[-1], self.data.Time[-1], levelname, level, result_candle, self.data.Open[-1], self.data.Close[-1], self.data.Volume[-1]])
+                            breakinstances_candle.append(Levelbreak_Candle(self.data.Date[-1], self.data.Time[-1], sessions['session_name'], levelname, level, result_candle, self.data.Open[-1], self.data.Close[-1], self.data.Volume[-1]))
+                            self.breaklist_candle.append([self.data.Date[-1], self.data.Time[-1], sessions['session_name'], levelname, level, result_candle, self.data.Open[-1], self.data.Close[-1], self.data.Volume[-1]])
 
                         if result_wick != None:
                             #print("entered if breaklevel with following values: ", self.data.Open[-1], self.data.Close[-1], level)
@@ -202,12 +205,12 @@ class DR_Backtesting(Strategy):
                         #print(self.breaklist_candle)
                         #checking for early indication
                         for breakinstance in self.breaklist_candle:
-                            if breakinstance[2] == 'idr_high': #checks if early indication is bullish
+                            if breakinstance[3] == 'idr_high': #checks if early indication is bullish
                                 #print("early indication is bullish")
                                 #print("early indication is bullish")
                                 found_dr_low = False
                                 for breakinstance in self.breaklist_candle:
-                                    if breakinstance[2] == 'dr_low': # early indication has been bullish but broke
+                                    if breakinstance[3] == 'dr_low': # early indication has been bullish but broke
                                         #print("early indication has been bullish but broke")
                                         #print("early indication has been bullish but broke")
                                         self.earlyindication = 2
@@ -220,12 +223,12 @@ class DR_Backtesting(Strategy):
                                     self.earlyindication = 4
                                 break
                                     
-                            elif breakinstance[2] == 'idr_low': #checks if early indication is bearish
+                            elif breakinstance[3] == 'idr_low': #checks if early indication is bearish
                                 #print("early indication is bearish")
                                 #print("early indication is bearish")
                                 found_dr_high = False
                                 for breakinstance in self.breaklist_candle:
-                                    if breakinstance[2] == 'dr_high': #early indication has been bearish but broke
+                                    if breakinstance[3] == 'dr_high': #early indication has been bearish but broke
                                         #print("early indication has been bearish but broke")
                                         #print("early indication has been bearish but broke")
                                         self.earlyindication = 1
@@ -240,12 +243,12 @@ class DR_Backtesting(Strategy):
 
                         #checking for confirmation
                         for breakinstance in self.breaklist_candle:
-                            if breakinstance[2] == 'dr_high': #checks if confirmation is bullish
+                            if breakinstance[3] == 'dr_high': #checks if confirmation is bullish
                                 #print("confirmation has been bullish")
                                 #print("confirmation has been bullish")
                                 found_dr_low = False
                                 for breakinstance in self.breaklist_candle:
-                                    if breakinstance[2] == 'dr_low': #confirmation has been bullish but broke
+                                    if breakinstance[3] == 'dr_low': #confirmation has been bullish but broke
                                         #print("confirmation has been bullish but broke")
                                         #print("confirmation has been bullish but broke")
                                         self.confirmation = 2
@@ -258,12 +261,12 @@ class DR_Backtesting(Strategy):
                                     self.confirmation = 4
                                 #break
 
-                            elif breakinstance[2] == 'dr_low': #checks if confirmation is bearish
+                            elif breakinstance[3] == 'dr_low': #checks if confirmation is bearish
                                 #print("confirmation has been bearish")
                                 #print("confirmation has been bearish")
                                 found_dr_high = False
                                 for breakinstance in self.breaklist_candle:
-                                    if breakinstance[2] == 'dr_high': #confirmation has been bearish but broke
+                                    if breakinstance[3] == 'dr_high': #confirmation has been bearish but broke
                                         #print("confirmation has been bearish but broke")
                                         #print("confirmation has been bearish but broke")
                                         self.confirmation = 1
@@ -329,3 +332,5 @@ with open('breaks_wick.csv', 'w', newline='') as csvfile:
     writer.writerows(dfbreaks_wick.to_dict(orient='records'))
 
 subprocess.run(["python", "analyze.py"])
+subprocess.run(["python", "advancedanalyze.py"])
+print(datetime.datetime.now().strftime("%H:%M:%S"))

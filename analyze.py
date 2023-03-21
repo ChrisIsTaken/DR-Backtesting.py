@@ -50,10 +50,8 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
     
     #Iterate through each row in the CSV file
     for row in readersession:
-
         #Count for early indication
         if row[-2] == '0':
-
             no_early_indication_count += 1
 
             if row[0] == 'RDR':
@@ -62,7 +60,7 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
                 adr_no_early_indication_count += 1
             elif row[0] == 'ODR':
                 odr_no_early_indication_count += 1
-        
+
         if row[-2] == '1':
             early_indication_bearish_broken += 1
 
@@ -160,6 +158,8 @@ with open('sessions.csv', 'r') as sessions, open('breaks_candle.csv', 'r') as ca
 
 #Probability that early indication held
 print("Probability for early indication holding true overall:")
+#print(early_indication_bearish_held)
+#print(early_indication_bullish_held)
 early_indication_held_count = early_indication_bearish_held + early_indication_bullish_held
 early_indication_held_percentage = (early_indication_held_count / (early_indication_bearish_broken + early_indication_bullish_broken + early_indication_held_count)) * 100
 print(f"    Probability that early indication held: {early_indication_held_percentage:.2f}%")
